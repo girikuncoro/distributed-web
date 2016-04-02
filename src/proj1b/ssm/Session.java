@@ -48,4 +48,8 @@ public class Session {
 		return new Session(fields.get(0), Integer.parseInt(fields.get(1)), fields.get(2),
 				Timestamp.valueOf(fields.get(3)), Timestamp.valueOf(fields.get(4)), locationData);
 	}
+	
+	public String getSessionID() {
+		return sessionID;
+	}
 }
