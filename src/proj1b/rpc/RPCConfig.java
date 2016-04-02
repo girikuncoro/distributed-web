@@ -8,4 +8,6 @@ public class RPCConfig {
 	public static final int WRITE_CODE = 2;
 	
 	public static final String RPC_DELIMITER = "_";
+	public static final int RPC_RESPONSE_OK = 200;
+	public static final int RPC_RESPONSE_NOT_FOUND = 400;
 }
