@@ -9,10 +9,10 @@ public class Session {
 	private String message;
 	private Timestamp creationTime;
 	private Timestamp expirationTime;
-	private List<String> locationData;
+	private Set<String> locationData;
 
 	public Session(String sessionID, int versionNumber, String message, Timestamp creationTime,
-			Timestamp expirationTime, List<String> locationData) {
+			Timestamp expirationTime, Set<String> locationData) {
 		this.sessionID = sessionID;
 		this.versionNumber = versionNumber;
 		this.message = message;
@@ -21,7 +21,7 @@ public class Session {
 		this.locationData = locationData;
 	}
 
-	public Session(String sessionID, List<String> locationData) {
+	public Session(String sessionID, Set<String> locationData) {
 		this(sessionID, 0, "", null, null, locationData);
 
 		Date date = new Date();
@@ -29,7 +29,7 @@ public class Session {
 		this.expirationTime = new Timestamp(creationTime.getTime() + (SessionManager.getTimeToLive() * 1000));
 	}
 
-	public Session(String sessionID, List<String> locationData, String message) {
+	public Session(String sessionID, Set<String> locationData, String message) {
 		this(sessionID, locationData);
 		this.message = message;
 	}
@@ -42,7 +42,7 @@ public class Session {
 
 	public static Session decode(String encodedSession) {
 		List<String> fields = Arrays.asList(encodedSession.split(SessionManager.SESSION_DELIMITER));
-		List<String> locationData = new ArrayList<String>();
+		Set<String> locationData = new HashSet<String>();
 		locationData.addAll(fields.subList(5, fields.size()));
 
 		return new Session(fields.get(0), Integer.parseInt(fields.get(1)), fields.get(2),
@@ -63,5 +63,14 @@ public class Session {
 	public void update(String message) {
 		update();
 		this.message = message;
+	}
+	
+	public int addLocation(String location) {
+		locationData.add(location);
+		return locationData.size();
+	}
+	
+	public int getLocationDataNumber() {
+		return locationData.size();
 	}
 }
