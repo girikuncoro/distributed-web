@@ -43,9 +43,10 @@ public class RPCConfig {
 		return true;
 	}
 	
-	public static String getServerID() {
+	public static String getServerID(String ipAddress) {
 		Instance instance = new Instance();
-		String serverID = instance.getPublicIpAddress();
-		return serverID;
+		instance.withPublicIpAddress(ipAddress);
+		Integer serverID = instance.getAmiLaunchIndex();
+		return serverID.toString();
 	}
 }
