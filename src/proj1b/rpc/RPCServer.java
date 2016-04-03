@@ -64,7 +64,7 @@ public class RPCServer implements Runnable {
 					// sessionRead: expected response format: callID_responseCode_encodedSessionData
 					case RPCConfig.READ_CODE:  
 						RPCStream.DataRead read = RPCStream.extractRead(data);
-						session = SessionManager.getSession(read.sessionID);
+						session = SessionManager.getSession(read.sessionID, read.sessionVersion);
 //						String returnServerID = RPCConfig.getServerID(returnAddr.toString());
 						String returnServerID = "127.0.0.1";
 						

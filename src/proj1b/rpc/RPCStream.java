@@ -51,12 +51,12 @@ public class RPCStream {
 	 */
 	public static class Data {
 		String callID;
-		Integer operationCode;
+		int operationCode;
 	}
 	
 	public static class DataRead extends Data {
 		String sessionID;
-		Integer sessionVersion;
+		int sessionVersion;
 		
 		public DataRead() {
 			super();
