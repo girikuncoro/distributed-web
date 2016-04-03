@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.amazonaws.services.ec2.model.Instance;
+
 public class RPCConfig {
 	public static final int PORT = 5300;
 	public static final int MAX_PACKET_LENGTH = 512;
@@ -39,5 +41,11 @@ public class RPCConfig {
 
 		svrIDcallIDMap.put(svrID, receivedCallID);
 		return true;
+	}
+	
+	public static String getServerID() {
+		Instance instance = new Instance();
+		String serverID = instance.getPublicIpAddress();
+		return serverID;
 	}
 }
