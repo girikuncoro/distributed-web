@@ -10,7 +10,7 @@ public class Session {
 	private Timestamp creationTime;
 	private Timestamp expirationTime;
 	private List<String> locationData;
-
+	
 	public Session(String sessionID, int versionNumber, String message, Timestamp creationTime,
 			Timestamp expirationTime, List<String> locationData) {
 		this.sessionID = sessionID;
