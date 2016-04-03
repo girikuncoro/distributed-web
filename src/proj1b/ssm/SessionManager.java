@@ -15,7 +15,8 @@ public class SessionManager {
 	}
 	
 	public static void addToTable(Session session) {
-		sessionDataTable.put(session.getSessionID(), session);
+		String key = session.getSessionID() + SESSION_DELIMITER + session.getVersionNumber();
+		sessionDataTable.put(key, session);
 	}
 	
 	public static void removeFromTable(Session session) {

@@ -10,4 +10,5 @@ public class RPCConfig {
 	public static final String RPC_DELIMITER = "_";
 	public static final int RPC_RESPONSE_OK = 200;
 	public static final int RPC_RESPONSE_NOT_FOUND = 400;
+	public static final int RPC_RESPONSE_INVALID_OPCODE = 300;
 }
