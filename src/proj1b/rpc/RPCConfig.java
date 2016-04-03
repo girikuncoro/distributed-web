@@ -7,7 +7,7 @@ import java.util.Map;
 import com.amazonaws.services.ec2.model.Instance;
 
 public class RPCConfig {
-	public static final int PORT = 5300;
+	public static final int SERVER_PORT = 5300;
 	public static final int MAX_PACKET_LENGTH = 512;
 	public static final int NO_OP_CODE = 0;
 	public static final int READ_CODE = 1;
