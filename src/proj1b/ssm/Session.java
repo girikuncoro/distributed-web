@@ -10,7 +10,7 @@ public class Session {
 	private Timestamp creationTime;
 	private Timestamp expirationTime;
 	private Set<String> locationData;
-
+	
 	public Session(String sessionID, int versionNumber, String message, Timestamp creationTime,
 			Timestamp expirationTime, Set<String> locationData) {
 		this.sessionID = sessionID;
@@ -53,6 +53,10 @@ public class Session {
 		return sessionID;
 	}
 	
+	public Integer getVersionNumber() {
+		return versionNumber;
+	}
+
 	public void update() {
 		this.versionNumber++;
 		Date date = new Date();

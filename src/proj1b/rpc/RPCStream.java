@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import proj1b.ssm.Session;
+
 // Ref: http://stackoverflow.com/questions/5837698/converting-any-object-to-a-byte-array-in-java
 public class RPCStream {
 	/**
@@ -48,41 +50,59 @@ public class RPCStream {
 	 * Inner class for the extracted data from string data
 	 */
 	public static class Data {
-		private String callID;
-		private Integer operationCode;
-		private String sessionID;
-		private String sessionVersion;
+		String callID;
+		Integer operationCode;
+	}
+	
+	public static class DataRead extends Data {
+		String sessionID;
+		Integer sessionVersion;
 		
-		public String getCallID() {
-			return this.callID;
-		} 
-		
-		public Integer getOperationCode() {
-			return this.operationCode;
+		public DataRead() {
+			super();
 		}
+	}
+	
+	public static class DataWrite extends Data {
+		Session session;
 		
-		public String getSessionID() {
-			return this.sessionID;
-		}
-		
-		public String getSessionVersion() {
-			return this.sessionVersion;
+		public DataWrite() {
+			super();
 		}
 	}
 	
 	/**
 	 * Extract the string data to get callID, operationCode, sessionID, and sessionVersion from current RPC call
 	 * @param String RPCdata
-	 * @return Data extracted data
+	 * @return DataRead extracted data
 	 */
-	public static Data extract(String RPCData) {
+	public static DataRead extractRead(String RPCData) {
+		// Expected format: callID_operationCode_sessionID_sessionVersion
+		
 		String[] req = RPCData.split(RPCConfig.RPC_DELIMITER);
-		Data res = new Data();
+		DataRead res = new DataRead();
 		
 		res.callID = req[0];
 		res.operationCode = Integer.parseInt(req[1]);
 		res.sessionID = req[2];
-		res.sessionVersion = req[3];
+		res.sessionVersion = Integer.parseInt(req[3]);
+		return res;
+	}
+	
+	/**
+	 * Extract the string data to get callID, operationCode, sessionData from current RPC call
+	 * @param String RPCdata
+	 * @return DataWrite extracted data
+	 */
+	public static DataWrite extractWrite(String RPCData) {
+		// Expected format: callID_operationCode_encodedSessionData
+		
+		String[] req = RPCData.split(RPCConfig.RPC_DELIMITER);
+		DataWrite res = new DataWrite();
+		
+		res.callID = req[0];
+		res.operationCode = Integer.parseInt(req[1]);
+		res.session = Session.decode(req[2]);
 		return res;
 	}
 }

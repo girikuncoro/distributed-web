@@ -1,7 +1,6 @@
 package proj1b.rpc;
 
 import java.util.List;
-import java.sql.Timestamp;
 
 import proj1b.ssm.Session;
 
