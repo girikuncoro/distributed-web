@@ -56,4 +56,16 @@ public class Session {
 	public Integer getVersionNumber() {
 		return versionNumber;
 	}
+
+	public void update() {
+		this.versionNumber++;
+		Date date = new Date();
+		this.creationTime = new Timestamp(date.getTime());
+		this.expirationTime = new Timestamp(creationTime.getTime() + (SessionManager.getTimeToLive() * 1000));
+	}
+	
+	public void update(String message) {
+		update();
+		this.message = message;
+	}
 }
