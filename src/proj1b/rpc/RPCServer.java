@@ -58,7 +58,7 @@ public class RPCServer implements Runnable {
 					
 					// NoOp: expected response format: callID_responseCode
 					case RPCConfig.NO_OP_CODE:  
-						response += RPCConfig.RPC_DELIMITER + RPCConfig.NO_OP_CODE;
+						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;  
 					
 					// sessionRead: expected response format: callID_responseCode_encodedSessionData
