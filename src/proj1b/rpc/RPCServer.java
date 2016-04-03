@@ -111,8 +111,6 @@ public class RPCServer implements Runnable {
 				
 			} catch (IOException e) {
 				e.printStackTrace();
-			} finally {
-				rpcSocket.close();
 			}
 		}
 	}

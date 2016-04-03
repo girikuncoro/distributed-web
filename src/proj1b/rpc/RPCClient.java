@@ -43,7 +43,7 @@ public class RPCClient {
 				socket = new DatagramSocket();
 				byte[] sendBytes = RPCStream
 						.marshall(String.join(RPCConfig.RPC_DELIMITER, new String[] { String.valueOf(callID),
-								String.valueOf(RPCConfig.READ_CODE), sessionID, String.valueOf(versionNumber) }));
+								String.valueOf(RPCConfig.NO_OP_CODE), sessionID, String.valueOf(versionNumber) }));
 				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrID), RPCConfig.SERVER_PORT);
 				LOGGER.info("Packet ready to send.");
 				socket.send(sendPkt);
@@ -63,8 +63,8 @@ public class RPCClient {
 						LOGGER.info("Reply received.");
 
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
-						LOGGER.info(recvInfo[0]);
-					} while (serverID.compareTo(svrID) != 0 || RPCConfig.isValidID(serverID, callID)
+						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
+					} while (serverID.compareTo(svrID) != 0 || !RPCConfig.isValidID(serverID, callID)
 							|| Integer.parseInt(recvInfo[1]) != 200);
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrID);

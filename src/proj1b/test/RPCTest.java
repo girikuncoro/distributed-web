@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import proj1b.rpc.RPCClient;
+import proj1b.rpc.RPCConfig;
 import proj1b.rpc.RPCServer;
 import proj1b.ssm.Session;
 
@@ -15,6 +16,8 @@ public class RPCTest {
 		
 		List<String> ipAddresses = new ArrayList<String>();
 		ipAddresses.add("127.0.0.1");
+		
+		RPCConfig.initializeMap(ipAddresses);
 		
 		Thread serverThread = new Thread(server);
 		serverThread.setName("server");
