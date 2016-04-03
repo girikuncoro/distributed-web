@@ -52,4 +52,8 @@ public class Session {
 	public String getSessionID() {
 		return sessionID;
 	}
+	
+	public Integer getVersionNumber() {
+		return versionNumber;
+	}
 }

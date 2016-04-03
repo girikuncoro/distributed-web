@@ -51,7 +51,7 @@ public class RPCStream {
 		private String callID;
 		private Integer operationCode;
 		private String sessionID;
-		private String sessionVersion;
+		private Integer sessionVersion;
 		
 		public String getCallID() {
 			return this.callID;
@@ -65,7 +65,7 @@ public class RPCStream {
 			return this.sessionID;
 		}
 		
-		public String getSessionVersion() {
+		public Integer getSessionVersion() {
 			return this.sessionVersion;
 		}
 	}
@@ -76,13 +76,15 @@ public class RPCStream {
 	 * @return Data extracted data
 	 */
 	public static Data extract(String RPCData) {
+		// Expected format: callID_operationCode_sessionID_sessionVersion
+		
 		String[] req = RPCData.split(RPCConfig.RPC_DELIMITER);
 		Data res = new Data();
 		
 		res.callID = req[0];
 		res.operationCode = Integer.parseInt(req[1]);
 		res.sessionID = req[2];
-		res.sessionVersion = req[3];
+		res.sessionVersion = Integer.parseInt(req[3]);
 		return res;
 	}
 }
