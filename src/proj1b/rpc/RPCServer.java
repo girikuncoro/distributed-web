@@ -48,7 +48,7 @@ public class RPCServer implements Runnable {
 				// inBuf contains callID and operationCode
 				String data = RPCStream.unmarshall(recvPacket.getData());
 				LOGGER.info("data is: " + data);
-				RPCStream.DataWrite request = RPCStream.extractWrite(data);  // write has less split length
+				RPCStream.Data request = RPCStream.extract(data);  // write has less split length
 				
 				String response = request.callID;
 				Session session;
@@ -90,10 +90,11 @@ public class RPCServer implements Runnable {
 						// TODO: for heavy delayed call, what if existing session already cleaned up?
 						// TODO: sessionID + ipAdress must be handled in servlet to maintain globally unique sessionID
 						
+						RPCStream.DataWrite write = RPCStream.extractWrite(data);
 						String serverIpAddress = rpcSocket.getLocalAddress().toString();
 //						request.session.addLocation(RPCConfig.getServerID(serverIpAddress));
-						request.session.addLocation("127.0.0.1");
-						SessionManager.addToTable(request.session);
+						write.session.addLocation("127.0.0.1");
+						SessionManager.addToTable(write.session);
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;
 					

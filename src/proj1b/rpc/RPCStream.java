@@ -72,6 +72,22 @@ public class RPCStream {
 	}
 	
 	/**
+	 * Extract the string data to get callID and operationCode
+	 * @param String RPCdata
+	 * @return Data extracted data
+	 */
+	public static Data extract(String RPCData) {
+		// Expected format: callID_operationCode_***
+		
+		String[] req = RPCData.split(RPCConfig.RPC_DELIMITER);
+		DataRead res = new DataRead();
+				
+		res.callID = req[0];
+		res.operationCode = Integer.parseInt(req[1]);
+		return res;
+	}
+	
+	/**
 	 * Extract the string data to get callID, operationCode, sessionID, and sessionVersion from current RPC call
 	 * @param String RPCdata
 	 * @return DataRead extracted data
