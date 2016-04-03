@@ -16,6 +16,9 @@ public class RPCServer implements Runnable {
 		rpcSocket = new DatagramSocket(RPCConfig.PORT);
 	}
 	
+	/**
+	 * This function runs a loop that serve RPC server in separate thread.
+	 */
 	@Override
 	public void run() {
 		while (true) {
@@ -37,24 +40,32 @@ public class RPCServer implements Runnable {
 				Session session;
 				
 				// TODO: Validate callID?
-				
 				switch (request.operationCode) {
+					
 					// NoOp: expected response format: callID_responseCode
 					case RPCConfig.NO_OP_CODE:  
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.NO_OP_CODE;
 						break;  
+					
 					// sessionRead: expected response format: callID_responseCode_encodedSessionData
 					case RPCConfig.READ_CODE:  
 						RPCStream.DataRead read = RPCStream.extractRead(data);
 						session = SessionManager.getSession(read.sessionID);
+						String returnServerID = RPCConfig.getServerID(returnAddr.toString());
 						
 						// session found and valid
-						if (session != null && session.getVersionNumber() == read.sessionVersion) {
+						if (session != null && session.getVersionNumber() == read.sessionVersion && 
+								RPCConfig.isValidID(returnServerID, Integer.parseInt(request.callID))) {
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK + RPCConfig.RPC_DELIMITER + session.encode();
-						} else {
+						} 
+						else if (!RPCConfig.isValidID(returnServerID, Integer.parseInt(request.callID))){
+							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_INVALID_CALLID;
+						} 
+						else {
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_NOT_FOUND;
 						}
 						break;
+					
 					// sessionWrite: expected response format: callID_responseCode_encodedSessionData
 					case RPCConfig.WRITE_CODE:  
 						// no need to check session exist, we need to keep all versions
@@ -63,9 +74,13 @@ public class RPCServer implements Runnable {
 						// TODO: should we check currentTime > discardedTime?
 						// TODO: for heavy delayed call, what if existing session already cleaned up?
 						// TODO: sessionID + ipAdress must be handled in servlet to maintain globally unique sessionID
+						
+						String serverIpAddress = rpcSocket.getLocalAddress().toString();
+						request.session.addLocation(RPCConfig.getServerID(serverIpAddress));
 						SessionManager.addToTable(request.session);
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;
+					
 					// invalidOpCode: expected response format: callID_responseCode
 					default:  
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_INVALID_OPCODE;
@@ -82,6 +97,4 @@ public class RPCServer implements Runnable {
 			}
 		}
 	}
-	
-	
 }
