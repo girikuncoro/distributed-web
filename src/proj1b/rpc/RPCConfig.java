@@ -1,8 +1,8 @@
 package proj1b.rpc;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.amazonaws.services.ec2.model.Instance;
 
@@ -18,10 +18,12 @@ public class RPCConfig {
 	public static final int RPC_RESPONSE_INVALID_OPCODE = 300;
 	public static final int RPC_RESPONSE_NOT_FOUND = 400;
 	public static final int RPC_RESPONSE_INVALID_CALLID = 401;
+	
+	public static final int SOCKET_TIMEOUT = 1000;
 
 	private static Map<String, Integer> svrIDcallIDMap = new HashMap<String, Integer>();
 
-	public static void initializeMap(List<String> svrIDs) {
+	public static void initializeMap(Set<String> svrIDs) {
 		for (String svrID : svrIDs)
 			svrIDcallIDMap.put(svrID, 0);
 	}
