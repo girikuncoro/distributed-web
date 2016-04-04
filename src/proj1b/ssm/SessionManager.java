@@ -28,9 +28,10 @@ public class SessionManager {
 		}
 	}
 	
-	public static Session getSession(String sessionName) {
-		if(!sessionDataTable.containsKey(sessionName)) return null;
-		return sessionDataTable.get(sessionName);
+	public static Session getSession(String sessionName, int versionNumber) {
+		String key = sessionName+"#"+versionNumber;
+		if(!sessionDataTable.containsKey(key)) return null;
+		return sessionDataTable.get(key);
 	}
 	
 	public static Collection<Session> getTableValues() {

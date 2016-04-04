@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.logging.Logger;
 
 import proj1b.ssm.Session;
 import proj1b.ssm.SessionManager;
@@ -12,8 +13,17 @@ import proj1b.ssm.SessionManager;
 public class RPCServer implements Runnable {
 	DatagramSocket rpcSocket;
 	
-	public RPCServer() throws SocketException {
-		rpcSocket = new DatagramSocket(RPCConfig.PORT);
+	private static final Logger LOGGER = Logger.getLogger("RPC server logger");
+	
+	public RPCServer() {
+		try {
+			LOGGER.info("Ready to build socket.");
+			rpcSocket = new DatagramSocket(RPCConfig.SERVER_PORT);
+			LOGGER.info("Socket built.");
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -21,6 +31,7 @@ public class RPCServer implements Runnable {
 	 */
 	@Override
 	public void run() {
+		LOGGER.info("Server is running.");
 		while (true) {
 			byte[] inBuf = new byte[RPCConfig.MAX_PACKET_LENGTH];
 			byte[] outBuf = new byte[RPCConfig.MAX_PACKET_LENGTH];
@@ -28,13 +39,16 @@ public class RPCServer implements Runnable {
 			DatagramPacket recvPacket = new DatagramPacket(inBuf, inBuf.length);
 			
 			try {
+				LOGGER.info("Trying to receive packet.");
 				rpcSocket.receive(recvPacket);
 				InetAddress returnAddr = recvPacket.getAddress();
 				int returnPort = recvPacket.getPort();
+				LOGGER.info("Packet received from: " + returnAddr.toString() + ", " + returnPort);
 				
 				// inBuf contains callID and operationCode
 				String data = RPCStream.unmarshall(recvPacket.getData());
-				RPCStream.DataWrite request = RPCStream.extractWrite(data);  // write has less split length
+				LOGGER.info("data is: " + data);
+				RPCStream.Data request = RPCStream.extract(data);  // write has less split length
 				
 				String response = request.callID;
 				Session session;
@@ -44,21 +58,22 @@ public class RPCServer implements Runnable {
 					
 					// NoOp: expected response format: callID_responseCode
 					case RPCConfig.NO_OP_CODE:  
-						response += RPCConfig.RPC_DELIMITER + RPCConfig.NO_OP_CODE;
+						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;  
 					
 					// sessionRead: expected response format: callID_responseCode_encodedSessionData
 					case RPCConfig.READ_CODE:  
 						RPCStream.DataRead read = RPCStream.extractRead(data);
-						session = SessionManager.getSession(read.sessionID);
-						String returnServerID = RPCConfig.getServerID(returnAddr.toString());
+						session = SessionManager.getSession(read.sessionID, read.sessionVersion);
+//						String returnServerID = RPCConfig.getServerID(returnAddr.toString());
+						String returnServerID = "127.0.0.1";
 						
 						// session found and valid
 						if (session != null && session.getVersionNumber() == read.sessionVersion && 
-								RPCConfig.isValidID(returnServerID, Integer.parseInt(request.callID))) {
+								RPCConfig.isValidID(Integer.parseInt(request.callID))) {
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK + RPCConfig.RPC_DELIMITER + session.encode();
 						} 
-						else if (!RPCConfig.isValidID(returnServerID, Integer.parseInt(request.callID))){
+						else if (!RPCConfig.isValidID(Integer.parseInt(request.callID))){
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_INVALID_CALLID;
 						} 
 						else {
@@ -75,9 +90,10 @@ public class RPCServer implements Runnable {
 						// TODO: for heavy delayed call, what if existing session already cleaned up?
 						// TODO: sessionID + ipAdress must be handled in servlet to maintain globally unique sessionID
 						
+						RPCStream.DataWrite write = RPCStream.extractWrite(data);
 						String serverIpAddress = rpcSocket.getLocalAddress().toString();
-						request.session.addLocation(RPCConfig.getServerID(serverIpAddress));
-						SessionManager.addToTable(request.session);
+//						request.session.addLocation(RPCConfig.getServerID(serverIpAddress));
+						SessionManager.addToTable(write.session);
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;
 					

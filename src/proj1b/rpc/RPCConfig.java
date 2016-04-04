@@ -1,13 +1,13 @@
 package proj1b.rpc;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.amazonaws.services.ec2.model.Instance;
 
 public class RPCConfig {
-	public static final int PORT = 5300;
+	public static final int SERVER_PORT = 5300;
 	public static final int MAX_PACKET_LENGTH = 512;
 	public static final int NO_OP_CODE = 0;
 	public static final int READ_CODE = 1;
@@ -18,30 +18,37 @@ public class RPCConfig {
 	public static final int RPC_RESPONSE_INVALID_OPCODE = 300;
 	public static final int RPC_RESPONSE_NOT_FOUND = 400;
 	public static final int RPC_RESPONSE_INVALID_CALLID = 401;
+	
+	public static final int SOCKET_TIMEOUT = 1000;
 
-	private static Map<String, Integer> svrIDcallIDMap = new HashMap<String, Integer>();
-
-	public static void initializeMap(List<String> svrIDs) {
-		for (String svrID : svrIDs)
-			svrIDcallIDMap.put(svrID, 0);
-	}
-
-	public static int getCallID(String svrID) {
-		return svrIDcallIDMap.get(svrID);
-	}
-
-	public static void setCallID(String svrID, int callID) {
-		svrIDcallIDMap.put(svrID, callID);
-	}
-
-	public static boolean isValidID(String svrID, int receivedCallID) {
-		int callIdInMap = svrIDcallIDMap.get(svrID);
-
-		if (receivedCallID < callIdInMap) // Delayed packet
-			return false;
-
-		svrIDcallIDMap.put(svrID, receivedCallID);
-		return true;
+	public static int callID = 0;
+//	private static Map<String, Integer> svrIDcallIDMap = new HashMap<String, Integer>();
+//
+//	public static void initializeMap(Set<String> svrIDs) {
+//		for (String svrID : svrIDs)
+//			svrIDcallIDMap.put(svrID, 1);
+//	}
+//
+//	public static int getCallID(String svrID) {
+//		return svrIDcallIDMap.get(svrID);
+//	}
+//
+//	public static void setCallID(String svrID, int callID) {
+//		svrIDcallIDMap.put(svrID, callID);
+//	}
+//
+//	public static boolean isValidID(String svrID, int receivedCallID) {
+//		int callIdInMap = svrIDcallIDMap.get(svrID);
+//
+//		if (receivedCallID < callIdInMap) // Delayed packet
+//			return false;
+//
+//		svrIDcallIDMap.put(svrID, receivedCallID);
+//		return true;
+//	}
+	
+	public static boolean isValidID(int receivedCallID) {
+		return callID == receivedCallID;
 	}
 	
 	public static String getServerID(String ipAddress) {

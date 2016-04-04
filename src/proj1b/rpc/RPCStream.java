@@ -51,12 +51,12 @@ public class RPCStream {
 	 */
 	public static class Data {
 		String callID;
-		Integer operationCode;
+		int operationCode;
 	}
 	
 	public static class DataRead extends Data {
 		String sessionID;
-		Integer sessionVersion;
+		int sessionVersion;
 		
 		public DataRead() {
 			super();
@@ -69,6 +69,22 @@ public class RPCStream {
 		public DataWrite() {
 			super();
 		}
+	}
+	
+	/**
+	 * Extract the string data to get callID and operationCode
+	 * @param String RPCdata
+	 * @return Data extracted data
+	 */
+	public static Data extract(String RPCData) {
+		// Expected format: callID_operationCode_***
+		
+		String[] req = RPCData.split(RPCConfig.RPC_DELIMITER);
+		DataRead res = new DataRead();
+				
+		res.callID = req[0];
+		res.operationCode = Integer.parseInt(req[1]);
+		return res;
 	}
 	
 	/**
