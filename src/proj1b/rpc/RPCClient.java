@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import com.amazonaws.services.ec2.model.Instance;
 
@@ -23,8 +24,6 @@ public class RPCClient {
 		for (String svrID : svrIDs) {
 			DatagramSocket socket = null;
 			try {
-				svrID = "127.0.0.1"; // For RPC test
-
 				socket = new DatagramSocket();
 				socket.setSoTimeout(RPCConfig.SOCKET_TIMEOUT);
 				byte[] sendBytes = RPCStream
@@ -45,7 +44,7 @@ public class RPCClient {
 				String[] recvInfo = null;
 				// String serverID =
 				// RPCConfig.getServerID(recvPkt.getAddress().getHostAddress());
-				String serverID = "127.0.0.1";
+				String serverID = null;
 				try {
 					do {
 						recvPkt.setLength(inBuf.length);
@@ -53,6 +52,7 @@ public class RPCClient {
 						socket.receive(recvPkt);
 						LOGGER.info("Reply received.");
 
+						serverID = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
 					} while (serverID.compareTo(svrID) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
@@ -97,8 +97,6 @@ public class RPCClient {
 		for (String svrID : svrIDs) {
 			DatagramSocket socket = null;
 			try {
-				svrID = "127.0.0.1"; // For RPC test
-
 				socket = new DatagramSocket();
 				socket.setSoTimeout(RPCConfig.SOCKET_TIMEOUT);
 				byte[] sendBytes = RPCStream
@@ -119,7 +117,7 @@ public class RPCClient {
 				String[] recvInfo = null;
 				// String serverID =
 				// RPCConfig.getServerID(recvPkt.getAddress().getHostAddress());
-				String serverID = "127.0.0.1";
+				String serverID = null;
 				try {
 					do {
 						recvPkt.setLength(inBuf.length);
@@ -127,6 +125,7 @@ public class RPCClient {
 						socket.receive(recvPkt);
 						LOGGER.info("Reply received.");
 
+						serverID = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
 					} while (serverID.compareTo(svrID) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
@@ -164,13 +163,13 @@ public class RPCClient {
 	 */
 	public List<String> sessionWrite(Session session, List<String> svrIDs) {
 		List<String> backupList = new ArrayList<String>();
+		String localAddress = null;
 		
 		for (String svrID : svrIDs) {
 			DatagramSocket socket = null;
 			try {
-				svrID = "127.0.0.1"; // For RPC test
-				
 				socket = new DatagramSocket();
+				localAddress = socket.getLocalAddress().getHostAddress();
 				socket.setSoTimeout(RPCConfig.SOCKET_TIMEOUT);
 				
 				byte[] sendBytes = RPCStream.marshall(String.join(RPCConfig.RPC_DELIMITER, new String[] {
@@ -194,7 +193,7 @@ public class RPCClient {
 						socket.receive(recvPkt);
 						LOGGER.info("Reply received.");
 
-						serverID = "127.0.0.1";
+						serverID = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
 					} while (serverID.compareTo(svrID) != 0
@@ -219,7 +218,7 @@ public class RPCClient {
 			return null;
 		}
 		else {
-			backupList.add("127.0.0.1"); // Add myself
+			backupList.add(localAddress); // Add myself
 			return backupList;
 		}
 	}
