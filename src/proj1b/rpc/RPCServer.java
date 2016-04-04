@@ -70,10 +70,10 @@ public class RPCServer implements Runnable {
 						
 						// session found and valid
 						if (session != null && session.getVersionNumber() == read.sessionVersion && 
-								RPCConfig.isValidID(returnServerID, Integer.parseInt(request.callID))) {
+								RPCConfig.isValidID(Integer.parseInt(request.callID))) {
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK + RPCConfig.RPC_DELIMITER + session.encode();
 						} 
-						else if (!RPCConfig.isValidID(returnServerID, Integer.parseInt(request.callID))){
+						else if (!RPCConfig.isValidID(Integer.parseInt(request.callID))){
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_INVALID_CALLID;
 						} 
 						else {
@@ -93,7 +93,6 @@ public class RPCServer implements Runnable {
 						RPCStream.DataWrite write = RPCStream.extractWrite(data);
 						String serverIpAddress = rpcSocket.getLocalAddress().toString();
 //						request.session.addLocation(RPCConfig.getServerID(serverIpAddress));
-						write.session.addLocation("127.0.0.1");
 						SessionManager.addToTable(write.session);
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;
