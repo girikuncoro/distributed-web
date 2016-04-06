@@ -9,9 +9,6 @@ import proj1b.util.*;
 
 public class SessionManager{
 	private static SessionManager instance = new SessionManager();
-	private static Integer serverID; //TODO mapping
-	private static Integer rebootNum; 	// TODO read reboot_num from file system
-	private static Integer nextSessionID = 0;
 	private static Map<String, Session> sessionDataTable = new ConcurrentHashMap<String, Session>();
 	// garbage collection
 	private static Thread cleanUp = new Thread(new Runnable(){

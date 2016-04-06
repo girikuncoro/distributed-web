@@ -30,6 +30,9 @@ import proj1b.util.*;
 @WebServlet("/proj1bServlet")
 public class proj1bServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private static Integer localServerID; //TODO mapping
+	private static Integer rebootNum; 	// TODO read reboot_num from file system
+	private static Integer nextSessionID = 0;
 	private static SessionManager ssm = SessionManager.getInstance();
 	private static Map<Integer, String> instances = new ConcurrentHashMap<Integer, String>();
 	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
@@ -80,8 +83,7 @@ public class proj1bServlet extends HttpServlet {
 			//else, if no such cookie, or expired (removed or not removed), create a new session
 			if (sessionKey == null || !ssm.isInTheTable(sessionKey) 
 					|| ssm.isExpired(sessionKey)){
-				session = new Session(UUID.randomUUID(),System.currentTimeMillis());
-				//public Session(Integer serID, Integer rebootNum, Integer sessID, Set<String> locations)
+				session = new Session(localServerID, rebootNum, nextSessionID, null);
 				sessionKey = session.getSessionID();
 			}else{
 				session = ssm.getSession(sessionKey);
