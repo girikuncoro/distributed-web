@@ -25,7 +25,7 @@ public class RPCRemoteTest {
 		
 		Session session1 = new Session("1");
 		Session session2 = new Session("1");
-		session2.update();
+		session2.refresh();
 		
 		SessionManager.addToTable(session1);
 		SessionManager.addToTable(session2);

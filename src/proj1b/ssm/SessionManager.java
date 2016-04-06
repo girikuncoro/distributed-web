@@ -4,8 +4,25 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SessionManager {
+public class SessionManager{
+	private static SessionManager instance = new SessionManager();
+	private static Integer serverID; //TODO mapping
+	private static Integer rebootNum; 	// TODO read reboot_num from file system
+	private static Integer nextSessionID = 0;
 	private static Map<String, Session> sessionDataTable = new ConcurrentHashMap<String, Session>();
+	
+	private SessionManager(){
+		
+	}
+	
+	public static SessionManager getInstance(){
+		return instance;
+	}
+	
+	// TODO garbage collection
+	
+	
+	// From Shibo, for testing RPC
 	
 	private static final int TIME_TO_LIVE = 60;
 	public static final String SESSION_DELIMITER = "#";
