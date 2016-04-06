@@ -6,22 +6,22 @@ import proj1b.util.*;
 
 public class Session{
 	private String sessionID; //<ServerID, reboot_num, session id>
-	private Integer versionNumber;
-	private String message;
-	private long expirationTime;
-	private Set<String> locationData;
+	private Integer versionNumber; // default to 0
+	private String message; // default "Hello, User!"
+	private long expirationTime; // creation time + time out time
+	private Set<String> locationData; // ip-ip-ip....
 	
-	public Session(Integer serID, Integer rebootNum, Integer sessID, Integer verNum, String msg, Set<String> locations){
+	public Session(Integer serID, Integer rebootNum, Integer sessID, Set<String> locations){
 		sessionID = serID.toString() + Constants.SESSION_DELIMITER + rebootNum.toString() + Constants.SESSION_DELIMITER + sessID.toString();
-		versionNumber = verNum;
-		message = msg;
+		versionNumber = 0;
+		message = "Hello, User!";
 		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000;
 		locationData = locations;
 	}
 	
 	// for testing
 	public Session(String sessionID) {
-		this(0, 0, Integer.parseInt(sessionID), 0, "", null);
+		this(0, 0, Integer.parseInt(sessionID), null);
 	}
 	
 	/**
@@ -46,8 +46,7 @@ public class Session{
 	public static Session decode(String encodedSession){
 		List<String> fields = Arrays.asList(encodedSession.split(Constants.SESSION_DELIMITER));
 		return new Session(Integer.parseInt(fields.get(0)), Integer.parseInt(fields.get(1)), 
-				Integer.parseInt(fields.get(2)), Integer.parseInt(fields.get(3)), fields.get(4),
-				new HashSet<String>(fields.subList(5, fields.size())));
+				Integer.parseInt(fields.get(2)), new HashSet<String>(fields.subList(5, fields.size())));
 	}
 	
 	/**

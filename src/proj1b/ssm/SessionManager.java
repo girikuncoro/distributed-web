@@ -3,6 +3,7 @@ package proj1b.ssm;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import proj1b.util.*;
 
 public class SessionManager{
 	private static SessionManager instance = new SessionManager();
@@ -23,16 +24,8 @@ public class SessionManager{
 	
 	
 	// From Shibo, for testing RPC
-	
-	private static final int TIME_TO_LIVE = 60;
-	public static final String SESSION_DELIMITER = "#";
-	
-	public static int getTimeToLive() {
-		return TIME_TO_LIVE;
-	}
-	
 	public static void addToTable(Session session) {
-		String key = session.getSessionID() + SESSION_DELIMITER + session.getVersionNumber();
+		String key = session.getSessionID() + Constants.SESSION_DELIMITER + session.getVersionNumber();
 		sessionDataTable.put(key, session);
 	}
 	
@@ -46,7 +39,7 @@ public class SessionManager{
 	}
 	
 	public static Session getSession(String sessionName, int versionNumber) {
-		String key = sessionName+"#"+versionNumber;
+		String key = sessionName + Constants.SESSION_DELIMITER + versionNumber;
 		if(!sessionDataTable.containsKey(key)) return null;
 		return sessionDataTable.get(key);
 	}
