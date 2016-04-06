@@ -27,6 +27,7 @@ public class RPCSessionReadTest {
 	public static void main(String[] args) {
 		RPCServer server = new RPCServer();
 		RPCClient client1 = new RPCClient();
+		SessionManager ssm = SessionManager.getInstance();
 		
 //		RPCConfig.initializeMap(ipAddresses);
 		
@@ -38,8 +39,8 @@ public class RPCSessionReadTest {
 		Session session2 = new Session("1");
 		session2.refresh();
 		
-		SessionManager.addToTable(session1);
-		SessionManager.addToTable(session2);
+		ssm.addSession(session1);
+		ssm.addSession(session2);
 		
 		try {
 			Thread.sleep(3000);
