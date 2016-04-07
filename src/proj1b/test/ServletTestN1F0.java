@@ -35,8 +35,8 @@ public class ServletTestN1F0 {
 	private proj1bServlet servlet;
 	private HttpServletRequest request;
 	private HttpServletResponse response;
+	private RPCClient client;
 	private Session session;
-	private RPCClient c;
 	private List<String> locationData;
 	private RequestDispatcher rd;
 	
@@ -46,6 +46,7 @@ public class ServletTestN1F0 {
 		request = Mockito.mock(HttpServletRequest.class);
 		response = Mockito.mock(HttpServletResponse.class);
 		rd = Mockito.mock(RequestDispatcher.class);
+		client = Mockito.mock(RPCClient.class);
 		
 		Mockito.when(request.getRequestDispatcher("content.jsp")).thenReturn(rd);
 		Mockito.when(request.getParameter("Replace")).thenReturn("Replace");
@@ -69,24 +70,22 @@ public class ServletTestN1F0 {
 		
 		locationData = new ArrayList<String>();
 		locationData.add("1.1.1.1");
-		session = new Session(1,1,1,locationData);
 
 		Constants.N = 1;
 		Constants.R = 1;
 		Constants.W = 1;
 		Constants.F = 1;
+		
+		servlet = new proj1bServlet(client);
 	}
 
 	@Test
 	public void testCreateNewSession() {
-		c = Mockito.mock(RPCClient.class);
-		Mockito.when(c.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
+		Mockito.when(client.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
 		
 		Cookie[] cookies = new Cookie[1];
 		cookies[0] = new Cookie("INVALID_NAME", "FOO");
 		Mockito.when(request.getCookies()).thenReturn(cookies);
-		
-		servlet = new proj1bServlet(c);
 		
 		try {
 			servlet.doGet(request, response);
@@ -105,4 +104,26 @@ public class ServletTestN1F0 {
 		assertEquals(Constants.MAX_AGE, cookie.getValue().getMaxAge());
 	}
 	
+	@Test
+	public void testUpdateSession() {
+		session = new Session(2, 3, 4, new ArrayList<String>(2));
+		Mockito.when(client.sessionRead(session.getSessionID(), session.getVersionNumber(), session.getLocationData())).thenReturn(session);
+		
+		Cookie[] cookies = new Cookie[1];
+		cookies[0] = new Cookie("CS5300PROJ1SESSION", session.getCookieValue());
+		System.out.println("Curr cookie value : " + session.getCookieValue());
+		Mockito.when(request.getCookies()).thenReturn(cookies);
+		
+		try {
+			servlet.doGet(request, response);
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		ArgumentCaptor<Cookie> cookie = ArgumentCaptor.forClass(Cookie.class);
+		Mockito.verify(response).addCookie(cookie.capture());
+		
+		assertEquals("CS5300PROJ1SESSION", cookie.getValue().getName());
+		assertEquals("2_3_", cookie.getValue().getValue());
+	}
 }
