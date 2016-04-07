@@ -41,7 +41,6 @@ public class proj1bServlet extends HttpServlet {
 	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 	private static RPCClient client = new RPCClient();
        
-	
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -49,6 +48,7 @@ public class proj1bServlet extends HttpServlet {
         super();
         buildInstancesMap();
         getRebootNum();
+        LOGGER.info("Servlet instantialized");
     }
 
 	/**
@@ -76,6 +76,7 @@ public class proj1bServlet extends HttpServlet {
 					sessionID = cookieValues[0];
 					versionNumber = Integer.parseInt(cookieValues[1]);
 					bricks = Arrays.asList(cookieValues).subList(2, cookieValues.length);
+					LOGGER.info("Found a cookie named CS5300PROJ1SESSION");
 				}
 			}
 		}
@@ -83,6 +84,7 @@ public class proj1bServlet extends HttpServlet {
 		// create a new session if an arriving client request doesn't have a related cookie
 		if (sessionID == null){
 			session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
+			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session");
 		}else{
 			// convert server ID to server IP
 			IPs = new ArrayList<String>(bricks.size());
@@ -91,13 +93,13 @@ public class proj1bServlet extends HttpServlet {
 			}
 			
 			// send read request to retrieve session state from WQ servers
+			// TODO sessionRead call will return null if all servers are timed out. Thus, even though
 			session = client.sessionRead(sessionID, versionNumber, IPs);
-			if (session != null && session.getExpirationTime() > System.currentTimeMillis()){
-				// existing and valid session
-			}else{
-				// show session timed out or just create a new session
+			if (session == null || session.getExpirationTime() < System.currentTimeMillis()){
+				// removed session or invalid session (timed out)
 				session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
 			}
+			LOGGER.info("Retrieved session from peers or created a new session for removed/invalid session");
 				
 			// replace or refresh
 			if (request.getParameter("Refresh") != null){
@@ -124,8 +126,12 @@ public class proj1bServlet extends HttpServlet {
 		}
 		// send write request
 		List<String> locations = client.sessionWrite(session, IPs);
-		if (locations != null){
+		if (locations == null){
+			session.addLocation(instances.get(localServerID));
+			LOGGER.info("Running with only one server instance.");
+		}else{
 			session.resetLocation(locations);
+			LOGGER.info("Updated session location data");
 		}
 		
 		// update cookie

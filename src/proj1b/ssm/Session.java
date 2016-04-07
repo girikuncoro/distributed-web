@@ -1,6 +1,7 @@
 package proj1b.ssm;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import proj1b.util.*;
 
@@ -10,6 +11,7 @@ public class Session{
 	private String message; // default "Hello, User!"
 	private long expirationTime; // creation time + time out time
 	private List<String> locationData; // ip-ip-ip....
+	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 	
 	public Session(Integer serID, Integer rebootNum, Integer sessID, List<String> locations){
 		sessionID = serID.toString() + Constants.SESSION_DELIMITER + rebootNum.toString() + Constants.SESSION_DELIMITER + sessID.toString();
@@ -17,6 +19,7 @@ public class Session{
 		message = "Hello, User!";
 		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000;
 		locationData = locations;
+		LOGGER.info("Created a new session: " + sessionID);
 	}
 	
 	// for testing
@@ -54,6 +57,7 @@ public class Session{
 	public void refresh(){
 		versionNumber += 1;
 		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000 + Constants.SESSION_TIMEOUT_DELTA;
+		LOGGER.info("Refreshed a session");
 	}
 	
 	/**
@@ -63,11 +67,13 @@ public class Session{
 		message = msg;
 		versionNumber += 1;
 		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000 + Constants.SESSION_TIMEOUT_DELTA;
+		LOGGER.info("Replaced a session state with message " + msg);
 	}
 	
 	public void logout(){
 		message = "You have logged out.";
 		this.expirationTime = System.currentTimeMillis();
+		LOGGER.info("Invalidated a session due to logging out");
 	}
 	
 	public String getMessage(){
@@ -105,6 +111,7 @@ public class Session{
 	
 	public int resetLocation(List<String> newLocations){
 		locationData = newLocations;
+		LOGGER.info("Reset session location data");
 		return locationData.size();
 	}
 	
