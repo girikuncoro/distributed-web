@@ -9,9 +9,9 @@ public class Session{
 	private Integer versionNumber; // default to 0
 	private String message; // default "Hello, User!"
 	private long expirationTime; // creation time + time out time
-	private Set<String> locationData; // ip-ip-ip....
+	private List<String> locationData; // ip-ip-ip....
 	
-	public Session(Integer serID, Integer rebootNum, Integer sessID, Set<String> locations){
+	public Session(Integer serID, Integer rebootNum, Integer sessID, List<String> locations){
 		sessionID = serID.toString() + Constants.SESSION_DELIMITER + rebootNum.toString() + Constants.SESSION_DELIMITER + sessID.toString();
 		versionNumber = 0;
 		message = "Hello, User!";
@@ -35,10 +35,9 @@ public class Session{
 		res.append(sessionID);
 		res.append(Constants.SESSION_DELIMITER);
 		res.append(String.valueOf(versionNumber));
-		Iterator<String> iter = locationData.iterator();
-		while (iter.hasNext()){
+		for (int i = 0; i < locationData.size(); i++){
 			res.append(Constants.SESSION_DELIMITER);
-			res.append(iter.next());
+			res.append(locationData.get(i));
 		}
 		return res.toString();
 	}
@@ -46,7 +45,7 @@ public class Session{
 	public static Session decode(String encodedSession){
 		List<String> fields = Arrays.asList(encodedSession.split(Constants.SESSION_DELIMITER));
 		return new Session(Integer.parseInt(fields.get(0)), Integer.parseInt(fields.get(1)), 
-				Integer.parseInt(fields.get(2)), new HashSet<String>(fields.subList(5, fields.size())));
+				Integer.parseInt(fields.get(2)), fields.subList(5, fields.size()));
 	}
 	
 	/**
@@ -54,7 +53,7 @@ public class Session{
 	 */
 	public void refresh(){
 		versionNumber += 1;
-		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000;
+		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000 + Constants.SESSION_TIMEOUT_DELTA;
 	}
 	
 	/**
@@ -63,7 +62,12 @@ public class Session{
 	public void replace(String msg){
 		message = msg;
 		versionNumber += 1;
-		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000;
+		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000 + Constants.SESSION_TIMEOUT_DELTA;
+	}
+	
+	public void logout(){
+		message = "You have logged out.";
+		this.expirationTime = System.currentTimeMillis();
 	}
 	
 	public String getMessage(){
@@ -86,7 +90,7 @@ public class Session{
 		return this.encode();
 	}
 	
-	public Set<String> getLocationData(){
+	public List<String> getLocationData(){
 		return locationData;
 	}
 
@@ -96,6 +100,11 @@ public class Session{
 	}
 	
 	public int getLocationDataNumber() {
+		return locationData.size();
+	}
+	
+	public int resetLocation(List<String> newLocations){
+		locationData = newLocations;
 		return locationData.size();
 	}
 	

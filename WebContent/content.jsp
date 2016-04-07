@@ -13,7 +13,7 @@
 <form method="get">
 	<div>
 		<input type="submit" name="Replace" value="Replace">
-		<input type="text" name="Message" maxlength="256">	
+		<input type="text" name="Message" maxlength="512">	
 	</div>
 	<div>
 		<input type="submit" name="Refresh" value="Refresh">

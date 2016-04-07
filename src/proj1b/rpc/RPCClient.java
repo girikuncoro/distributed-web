@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import proj1b.ssm.Session;
+import proj1b.util.*;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -19,6 +20,10 @@ public class RPCClient {
 	// private static int callID = 0;
 
 	private static final Logger LOGGER = Logger.getLogger("RPC client logger");
+	
+	public RPCClient(){
+		super();
+	}
 
 	public Session sessionNoOp(String sessionID, int versionNumber, List<String> svrIDs) {
 		for (String svrID : svrIDs) {
@@ -197,8 +202,8 @@ public class RPCClient {
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
 					} while (serverID.compareTo(svrID) != 0
-							|| RPCConfig.isValidID(Integer.parseInt(recvInfo[0])) && addToList(backupList, serverID) <= 2);
-					// 2 Should be WQ
+							|| RPCConfig.isValidID(Integer.parseInt(recvInfo[0])) && addToList(backupList, serverID) <= Constants.WQ);
+					// 2 Should be WQ.[Changed 2 to WQ]
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrID);
 					recvPkt = null;
@@ -213,7 +218,7 @@ public class RPCClient {
 		}
 
 		RPCConfig.callID++;
-		if (backupList.size() <= 2) { // Again, 2 should be WQ
+		if (backupList.size() <= Constants.WQ) { // Again, 2 should be WQ. [Changed]
 			LOGGER.info("Not enough backup.");
 			return null;
 		}

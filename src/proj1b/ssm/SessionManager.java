@@ -71,22 +71,6 @@ public class SessionManager{
 		return sessionDataTable.get(key);
 	}
 	
-	public Session getSession(String key){
-		return sessionDataTable.get(key);
-	}
-
-	public boolean isInTheTable(String key){
-		return sessionDataTable.containsKey(key);
-	}
-	
-	public boolean isExpired(String key){
-		if (sessionDataTable.containsKey(key)){
-			if (sessionDataTable.get(key).getExpirationTime() < System.currentTimeMillis()){
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	public Collection<Session> getTableValues() {
 		return sessionDataTable.values();
