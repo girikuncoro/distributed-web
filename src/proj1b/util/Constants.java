@@ -20,6 +20,7 @@ public class Constants {
 	public static final String SESSION_DELIMITER = "_";
 	public static final String InstancesDir = System.getProperty("user.home") + "/instances.txt";
 	public static final String rebootDir = System.getProperty("user.home") + "/rebootNum.txt";
+	public static final String localIPDir = System.getProperty("user.home") + "/local-ipv4";
 	/*
 	 * Cookie
 	 */

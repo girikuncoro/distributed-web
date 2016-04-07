@@ -33,12 +33,12 @@ import proj1b.util.*;
 @WebServlet("/proj1bServlet")
 public class proj1bServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static Integer localServerID = 1; //TODO mapping
+	private static Integer localServerID; //TODO mapping
 	private static Integer rebootNum; 	// TODO read reboot_num from file system
 	private static Integer nextSessionID = 0;
 //	private static SessionManager ssm = SessionManager.getInstance();
-	private static Map<Integer, String> instancesIDIP = new ConcurrentHashMap<Integer, String>(); //<serverID, serverIP>
-	private static Map<String, Integer> instancesIPID = new ConcurrentHashMap<String, Integer>(); //<serverIP, serverID>
+	private static Map<Integer, String> instancesIDtoIP = new ConcurrentHashMap<Integer, String>(); //<serverID, serverIP>
+	private static Map<String, Integer> instancesIPtoID = new ConcurrentHashMap<String, Integer>(); //<serverIP, serverID>
 	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 	private static RPCClient client = new RPCClient();
 //	RequestDispatcher dispatcher;
@@ -50,6 +50,7 @@ public class proj1bServlet extends HttpServlet {
         super();
         buildInstancesMap();
         getRebootNum();
+        getLocalServerID();
         LOGGER.info("Servlet instantialized");
     }
     
@@ -58,6 +59,7 @@ public class proj1bServlet extends HttpServlet {
     	client = rpcClient;
     	buildInstancesMap();
         getRebootNum();
+        getLocalServerID();
         LOGGER.info("Servlet instantialized");
     }
 
@@ -98,7 +100,7 @@ public class proj1bServlet extends HttpServlet {
 			// convert server ID to server IP
 			IPs = new ArrayList<String>(bricks.size());
 			for (int i = 0; i < bricks.size(); i++){
-				IPs.add(instancesIDIP.get(bricks.get(i)));
+				IPs.add(instancesIDtoIP.get(bricks.get(i)));
 			}
 			
 			// send read request to retrieve session state from WQ servers
@@ -124,7 +126,7 @@ public class proj1bServlet extends HttpServlet {
 		//update to at least WQ bricks
 		//get target W bricks
 		IPs = new ArrayList<String>(Constants.W);
-		Iterator<String> iter = instancesIDIP.values().iterator();
+		Iterator<String> iter = instancesIDtoIP.values().iterator();
 		for(int count = 0; count <= Constants.W; count++){
 			if(iter.hasNext()){
 				IPs.add(iter.next());
@@ -138,7 +140,7 @@ public class proj1bServlet extends HttpServlet {
 		bricks = new ArrayList<String>(locations.size());
 		if (locations != null){
 			for (int i = 0; i < locations.size(); i++){
-				bricks.add(instancesIPID.get(locations.get(i)).toString());
+				bricks.add(instancesIPtoID.get(locations.get(i)).toString());
 			}
 		}
 		session.resetLocation(bricks);
@@ -190,8 +192,8 @@ public class proj1bServlet extends HttpServlet {
 			String line = reader.readLine();
 			while (line != null){
 				String[] pairs = line.split("\\s+");
-				instancesIDIP.put(Integer.parseInt(pairs[1]), pairs[0]);
-				instancesIPID.put(pairs[0],Integer.parseInt(pairs[1]));
+				instancesIDtoIP.put(Integer.parseInt(pairs[1]), pairs[0]);
+				instancesIPtoID.put(pairs[0],Integer.parseInt(pairs[1]));
 				line = reader.readLine();
 			}
 			reader.close();
@@ -210,6 +212,23 @@ public class proj1bServlet extends HttpServlet {
 			reader = new BufferedReader(new InputStreamReader(baseFile));
 			LOGGER.info("Opened rebootNum.txt and ready to read info");
 			rebootNum = Integer.parseInt(reader.readLine());
+			reader.close();
+		}catch (FileNotFoundException e){
+			e.printStackTrace();
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	private void getLocalServerID(){
+		FileInputStream baseFile;
+		BufferedReader reader;
+		try{
+			baseFile = new FileInputStream(Constants.localIPDir);
+			reader = new BufferedReader(new InputStreamReader(baseFile));
+			LOGGER.info("Opened local-ipv4 and ready to read info");
+			String ip = reader.readLine();
+			localServerID = instancesIPtoID.get(ip);
 			reader.close();
 		}catch (FileNotFoundException e){
 			e.printStackTrace();

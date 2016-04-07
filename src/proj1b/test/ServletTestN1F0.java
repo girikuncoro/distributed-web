@@ -62,6 +62,7 @@ public class ServletTestN1F0 {
 			e.printStackTrace();
 		}
 		writerIns.println("1.1.1.1    2");  // ipAddress-SvrID pairs, assume localIP is 1.1.1.1
+		writerIns.println("127.31.19.148   1");
 		writerIns.close();
 		writerReb.println("3");  // rebooot number
 		writerReb.close();
