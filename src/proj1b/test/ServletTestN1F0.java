@@ -42,6 +42,7 @@ public class ServletTestN1F0 {
 	
 	@Before
 	public void setUp() {
+		
 		request = Mockito.mock(HttpServletRequest.class);
 		response = Mockito.mock(HttpServletResponse.class);
 		rd = Mockito.mock(RequestDispatcher.class);
@@ -58,15 +59,15 @@ public class ServletTestN1F0 {
 			writerIns = new PrintWriter(Constants.InstancesDir, "UTF-8");
 			writerReb = new PrintWriter(Constants.rebootDir, "UTF-8");
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		writerIns.println("127.0.0.1    2");  // ipAddress-SvrID pairs
+		writerIns.println("1.1.1.1    2");  // ipAddress-SvrID pairs, assume localIP is 1.1.1.1
 		writerIns.close();
 		writerReb.println("3");  // rebooot number
 		writerReb.close();
 		
-		locationData = new ArrayList<String>(1);
+		locationData = new ArrayList<String>();
+		locationData.add("1.1.1.1");
 		session = new Session(1,1,1,locationData);
 
 		Constants.N = 1;
@@ -78,7 +79,7 @@ public class ServletTestN1F0 {
 	@Test
 	public void testCreateNewSession() {
 		c = Mockito.mock(RPCClient.class);
-		Mockito.when(c.sessionWrite(session, locationData)).thenReturn(locationData);
+		Mockito.when(c.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
 		
 		Cookie[] cookies = new Cookie[1];
 		cookies[0] = new Cookie("INVALID_NAME", "FOO");
