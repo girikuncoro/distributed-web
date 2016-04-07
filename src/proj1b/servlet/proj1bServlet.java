@@ -40,6 +40,7 @@ public class proj1bServlet extends HttpServlet {
 	private static Map<Integer, String> instances = new ConcurrentHashMap<Integer, String>();
 	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 	private static RPCClient client = new RPCClient();
+//	RequestDispatcher dispatcher;
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -50,11 +51,19 @@ public class proj1bServlet extends HttpServlet {
         getRebootNum();
         LOGGER.info("Servlet instantialized");
     }
+    
+    public proj1bServlet(RPCClient rpcClient) {
+    	super();
+    	client = rpcClient;
+    	buildInstancesMap();
+        getRebootNum();
+        LOGGER.info("Servlet instantialized");
+    }
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
 		//initialized variables
@@ -104,10 +113,10 @@ public class proj1bServlet extends HttpServlet {
 			// replace or refresh
 			if (request.getParameter("Refresh") != null){
 				session.refresh();
-			}else if (request.getParameter("Replace") != null){
+			} else if (request.getParameter("Replace") != null){
 				String message = request.getParameter("Message");
 				session.replace(message);
-			}else if (request.getParameter("Logout") != null){
+			} else if (request.getParameter("Logout") != null){
 				logout = true;
 				session.logout();
 			}
@@ -138,6 +147,7 @@ public class proj1bServlet extends HttpServlet {
 		cookie = new Cookie(Constants.COOKIE_NAME, session.getCookieValue());
 		cookie.setMaxAge((int)Constants.MAX_AGE);
 		response.addCookie(cookie);
+		LOGGER.info("addcookie is here");
 		// TODO set cookie domain, see instruction P7
 		
 		// set output information
@@ -158,16 +168,18 @@ public class proj1bServlet extends HttpServlet {
 		// request forwarding
 		RequestDispatcher dispatcher = request.getRequestDispatcher("content.jsp");
 		dispatcher.forward(request, response);
+//		dispatcher = request.getRequestDispatcher("content.jsp");
+//		dispatcher.forward(request, response);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 	}	
 	
-	private void buildInstancesMap(){
+	public void buildInstancesMap(){
 		FileInputStream baseFile;
 		BufferedReader reader;
 		try{
