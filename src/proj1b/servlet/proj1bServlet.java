@@ -95,7 +95,7 @@ public class proj1bServlet extends HttpServlet {
 		// create a new session if an arriving client request doesn't have a related cookie
 		if (sessionID == null){
 			session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
-			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session");
+			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session " + session.getCookieValue());
 		}else{
 			// convert server ID to server IP
 			IPs = new ArrayList<String>(bricks.size());
@@ -105,6 +105,8 @@ public class proj1bServlet extends HttpServlet {
 			
 			// send read request to retrieve session state from WQ servers
 			session = client.sessionRead(sessionID, versionNumber, IPs);
+			LOGGER.info("Retrieved session : " + session.encode());
+			
 			if (session == null || session.getExpirationTime() < System.currentTimeMillis()){
 				// removed session or invalid session (timed out)
 				session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
@@ -127,7 +129,7 @@ public class proj1bServlet extends HttpServlet {
 		//get target W bricks
 		IPs = new ArrayList<String>(Constants.W);
 		Iterator<String> iter = instancesIDtoIP.values().iterator();
-		for(int count = 0; count <= Constants.W; count++){
+		for(int count = 0; count < Constants.W; count++){
 			if(iter.hasNext()){
 				IPs.add(iter.next());
 			}else{

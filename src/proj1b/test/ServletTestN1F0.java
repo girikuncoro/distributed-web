@@ -3,6 +3,7 @@ package proj1b.test;
 import static org.junit.Assert.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
@@ -49,24 +50,28 @@ public class ServletTestN1F0 {
 		client = Mockito.mock(RPCClient.class);
 		
 		Mockito.when(request.getRequestDispatcher("content.jsp")).thenReturn(rd);
-		Mockito.when(request.getParameter("Replace")).thenReturn("Replace");
-		Mockito.when(request.getParameter("Refresh")).thenReturn("Refresh");
-		Mockito.when(request.getParameter("Message")).thenReturn("Some message");
-		Mockito.when(request.getParameter("Logout")).thenReturn("Logout");
+//		Mockito.when(request.getParameter("Replace")).thenReturn("Replace");
+//		Mockito.when(request.getParameter("Refresh")).thenReturn("Refresh");
+//		Mockito.when(request.getParameter("Message")).thenReturn("Some message");
+//		Mockito.when(request.getParameter("Logout")).thenReturn("Logout");
 		
 		PrintWriter writerIns = null;
 		PrintWriter writerReb = null;
+		PrintWriter writerLocal = null;
 		try {
 			writerIns = new PrintWriter(Constants.InstancesDir, "UTF-8");
 			writerReb = new PrintWriter(Constants.rebootDir, "UTF-8");
+			writerLocal = new PrintWriter(Constants.localIPDir, "UTF-8");
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		writerIns.println("1.1.1.1    2");  // ipAddress-SvrID pairs, assume localIP is 1.1.1.1
-		writerIns.println("127.31.19.148   1");
+//		writerIns.println("127.31.19.148   1");
 		writerIns.close();
 		writerReb.println("3");  // rebooot number
 		writerReb.close();
+		writerLocal.println("1.1.1.1");
+		writerLocal.close();
 		
 		locationData = new ArrayList<String>();
 		locationData.add("1.1.1.1");
@@ -79,7 +84,7 @@ public class ServletTestN1F0 {
 		servlet = new proj1bServlet(client);
 	}
 
-	@Test
+	//@Test
 	public void testCreateNewSession() {
 		Mockito.when(client.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
 		
@@ -105,9 +110,10 @@ public class ServletTestN1F0 {
 	}
 	
 	@Test
-	public void testUpdateSession() {
-		session = new Session(2, 3, 4, new ArrayList<String>(2));
-		Mockito.when(client.sessionRead(session.getSessionID(), session.getVersionNumber(), session.getLocationData())).thenReturn(session);
+	public void testReadSession() {
+		session = new Session(2, 3, 4, new ArrayList<String>(Arrays.asList("2")));
+		Mockito.when(client.sessionRead(Mockito.any(String.class), Mockito.any(Integer.class), Mockito.any(List.class))).thenReturn(session);
+		Mockito.when(client.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
 		
 		Cookie[] cookies = new Cookie[1];
 		cookies[0] = new Cookie("CS5300PROJ1SESSION", session.getCookieValue());
@@ -124,6 +130,6 @@ public class ServletTestN1F0 {
 		Mockito.verify(response).addCookie(cookie.capture());
 		
 		assertEquals("CS5300PROJ1SESSION", cookie.getValue().getName());
-		assertEquals("2_3_", cookie.getValue().getValue());
+		assertEquals("2_3_4_0_2", cookie.getValue().getValue());
 	}
 }
