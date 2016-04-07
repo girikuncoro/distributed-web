@@ -37,7 +37,8 @@ public class proj1bServlet extends HttpServlet {
 	private static Integer rebootNum; 	// TODO read reboot_num from file system
 	private static Integer nextSessionID = 0;
 //	private static SessionManager ssm = SessionManager.getInstance();
-	private static Map<Integer, String> instances = new ConcurrentHashMap<Integer, String>();
+	private static Map<Integer, String> instancesIDIP = new ConcurrentHashMap<Integer, String>(); //<serverID, serverIP>
+	private static Map<String, Integer> instancesIPID = new ConcurrentHashMap<String, Integer>(); //<serverIP, serverID>
 	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 	private static RPCClient client = new RPCClient();
 //	RequestDispatcher dispatcher;
@@ -70,13 +71,12 @@ public class proj1bServlet extends HttpServlet {
 		Session session = null;
 		Cookie cookie = null;
 		Boolean logout = false;
-		
-		//iterate over cookies and find the related one
 		String sessionID = null;
 		int versionNumber = 0;
 		List<String> bricks = null;
 		List<String> IPs = null;
 		
+		//iterate over cookies and find the related one
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null){
 			for (Cookie co : cookies){
@@ -98,34 +98,33 @@ public class proj1bServlet extends HttpServlet {
 			// convert server ID to server IP
 			IPs = new ArrayList<String>(bricks.size());
 			for (int i = 0; i < bricks.size(); i++){
-				IPs.add(instances.get(bricks.get(i)));
+				IPs.add(instancesIDIP.get(bricks.get(i)));
 			}
 			
 			// send read request to retrieve session state from WQ servers
-			// TODO sessionRead call will return null if all servers are timed out. Thus, even though
 			session = client.sessionRead(sessionID, versionNumber, IPs);
 			if (session == null || session.getExpirationTime() < System.currentTimeMillis()){
 				// removed session or invalid session (timed out)
 				session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
 			}
 			LOGGER.info("Retrieved session from peers or created a new session for removed/invalid session");
-				
-			// replace or refresh
-			if (request.getParameter("Refresh") != null){
-				session.refresh();
-			} else if (request.getParameter("Replace") != null){
-				String message = request.getParameter("Message");
-				session.replace(message);
-			} else if (request.getParameter("Logout") != null){
-				logout = true;
-				session.logout();
-			}
+		}
+		
+		// replace or refresh
+		if (request.getParameter("Refresh") != null){
+			session.refresh();
+		} else if (request.getParameter("Replace") != null){
+			String message = request.getParameter("Message");
+			session.replace(message);
+		} else if (request.getParameter("Logout") != null){
+			logout = true;
+			session.logout();
 		}
 		
 		//update to at least WQ bricks
 		//get target W bricks
 		IPs = new ArrayList<String>(Constants.W);
-		Iterator<String> iter = instances.values().iterator();
+		Iterator<String> iter = instancesIDIP.values().iterator();
 		for(int count = 0; count <= Constants.W; count++){
 			if(iter.hasNext()){
 				IPs.add(iter.next());
@@ -133,15 +132,17 @@ public class proj1bServlet extends HttpServlet {
 				LOGGER.info("Less than W number of bricks for writing request.");
 			}
 		}
-		// send write request
+		// send write request and get returned IPs where the session is updated
 		List<String> locations = client.sessionWrite(session, IPs);
-		if (locations == null){
-			session.addLocation(instances.get(localServerID));
-			LOGGER.info("Running with only one server instance.");
-		}else{
-			session.resetLocation(locations);
-			LOGGER.info("Updated session location data");
+		// convert IPs back to server IDs
+		bricks = new ArrayList<String>(locations.size());
+		if (locations != null){
+			for (int i = 0; i < locations.size(); i++){
+				bricks.add(instancesIPID.get(locations.get(i)).toString());
+			}
 		}
+		session.resetLocation(bricks);
+		LOGGER.info("Updated session location data");
 		
 		// update cookie
 		cookie = new Cookie(Constants.COOKIE_NAME, session.getCookieValue());
@@ -189,7 +190,8 @@ public class proj1bServlet extends HttpServlet {
 			String line = reader.readLine();
 			while (line != null){
 				String[] pairs = line.split("\\s+");
-				instances.put(Integer.parseInt(pairs[1]), pairs[0]);
+				instancesIDIP.put(Integer.parseInt(pairs[1]), pairs[0]);
+				instancesIPID.put(pairs[0],Integer.parseInt(pairs[1]));
 				line = reader.readLine();
 			}
 			reader.close();
