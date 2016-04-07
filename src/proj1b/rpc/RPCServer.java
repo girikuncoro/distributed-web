@@ -14,6 +14,7 @@ public class RPCServer implements Runnable {
 	DatagramSocket rpcSocket;
 	
 	private static final Logger LOGGER = Logger.getLogger("RPC server logger");
+	SessionManager ssm = SessionManager.getInstance();
 	
 	public RPCServer() {
 		try {
@@ -64,7 +65,7 @@ public class RPCServer implements Runnable {
 					// sessionRead: expected response format: callID_responseCode_encodedSessionData
 					case RPCConfig.READ_CODE:  
 						RPCStream.DataRead read = RPCStream.extractRead(data);
-						session = SessionManager.getSession(read.sessionID, read.sessionVersion);
+						session = ssm.getSession(read.sessionID, read.sessionVersion);
 //						String returnServerID = RPCConfig.getServerID(returnAddr.toString());
 						String returnServerID = "127.0.0.1";
 						
@@ -93,7 +94,7 @@ public class RPCServer implements Runnable {
 						RPCStream.DataWrite write = RPCStream.extractWrite(data);
 						String serverIpAddress = rpcSocket.getLocalAddress().toString();
 //						request.session.addLocation(RPCConfig.getServerID(serverIpAddress));
-						SessionManager.addToTable(write.session);
+						ssm.addSession(write.session);
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;
 					

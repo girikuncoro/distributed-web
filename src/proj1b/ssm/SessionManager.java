@@ -1,40 +1,78 @@
 package proj1b.ssm;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SessionManager {
+import proj1b.util.*;
+
+public class SessionManager{
+	private static SessionManager instance = new SessionManager();
 	private static Map<String, Session> sessionDataTable = new ConcurrentHashMap<String, Session>();
+	// garbage collection
+	private static Thread cleanUp = new Thread(new Runnable(){
+		@Override
+		public void run() {
+			while (true){
+				Iterator<Map.Entry<String, Session>> iter = sessionDataTable.entrySet().iterator();
+				Session element = null;
+				while (iter.hasNext()){
+					element = iter.next().getValue();
+					if (element.getExpirationTime() < System.currentTimeMillis()){
+						iter.remove();
+					}
+				}
+				try{
+					Thread.sleep(3 * 60 * 1000);
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
+	});
 	
-	private static final int TIME_TO_LIVE = 60;
-	public static final String SESSION_DELIMITER = "#";
-	
-	public static int getTimeToLive() {
-		return TIME_TO_LIVE;
+	private SessionManager(){
+        cleanUp.start();
 	}
 	
-	public static void addToTable(Session session) {
-		String key = session.getSessionID() + SESSION_DELIMITER + session.getVersionNumber();
+	public static SessionManager getInstance(){
+		return instance;
+	}
+
+	public void addSession(Session session) {
+		String key = session.getSessionID() + Constants.SESSION_DELIMITER + session.getVersionNumber();
 		sessionDataTable.put(key, session);
 	}
 	
-	public static void removeFromTable(Session session) {
-		try {
-			sessionDataTable.remove(session.getSessionID());
+	public void removeFromTable(Session session) {
+		String key = session.getSessionID() + Constants.SESSION_DELIMITER + session.getVersionNumber();
+		if (sessionDataTable.containsKey(key)){
+			sessionDataTable.remove(key);
 		}
-		catch(Exception e) {
-			System.out.println("Session: " + session.getSessionID() + " has already been removed.");
+		
+//		try {
+//			sessionDataTable.remove(session.getSessionID());
+//		}
+//		catch(Exception e) {
+//			System.out.println("Session: " + session.getSessionID() + " has already been removed.");
+//		}
+	}
+	
+	public void removeFromTable(String key){
+		if (sessionDataTable.containsKey(key)){
+			sessionDataTable.remove(key);
 		}
 	}
 	
-	public static Session getSession(String sessionName, int versionNumber) {
-		String key = sessionName+"#"+versionNumber;
+	public Session getSession(String sessionName, int versionNumber) {
+		String key = sessionName + Constants.SESSION_DELIMITER + versionNumber;
 		if(!sessionDataTable.containsKey(key)) return null;
 		return sessionDataTable.get(key);
 	}
 	
-	public static Collection<Session> getTableValues() {
+	
+	public Collection<Session> getTableValues() {
 		return sessionDataTable.values();
 	}
 }
