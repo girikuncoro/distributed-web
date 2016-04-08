@@ -50,10 +50,6 @@ public class ServletTestN1F0 {
 		client = Mockito.mock(RPCClient.class);
 		
 		Mockito.when(request.getRequestDispatcher("content.jsp")).thenReturn(rd);
-//		Mockito.when(request.getParameter("Replace")).thenReturn("Replace");
-//		Mockito.when(request.getParameter("Refresh")).thenReturn("Refresh");
-//		Mockito.when(request.getParameter("Message")).thenReturn("Some message");
-//		Mockito.when(request.getParameter("Logout")).thenReturn("Logout");
 		
 		PrintWriter writerIns = null;
 		PrintWriter writerReb = null;
@@ -109,7 +105,7 @@ public class ServletTestN1F0 {
 		assertEquals(Constants.MAX_AGE, cookie.getValue().getMaxAge());
 	}
 	
-	@Test
+	//@Test
 	public void testReadSession() {
 		session = new Session(2, 3, 4, new ArrayList<String>(Arrays.asList("2")));
 		Mockito.when(client.sessionRead(Mockito.any(String.class), Mockito.any(Integer.class), Mockito.any(List.class))).thenReturn(session);
@@ -129,7 +125,99 @@ public class ServletTestN1F0 {
 		ArgumentCaptor<Cookie> cookie = ArgumentCaptor.forClass(Cookie.class);
 		Mockito.verify(response).addCookie(cookie.capture());
 		
+		ArgumentCaptor<String> info = ArgumentCaptor.forClass(String.class);
+		Mockito.verify(request, Mockito.times(6)).setAttribute(Mockito.any(String.class), info.capture());
+		List<String> capturedInfo = info.getAllValues();
+		
 		assertEquals("CS5300PROJ1SESSION", cookie.getValue().getName());
 		assertEquals("2_3_4_0_2", cookie.getValue().getValue());
+		assertEquals(Constants.MAX_AGE, cookie.getValue().getMaxAge());
+		
+		assertEquals("2_3_4", capturedInfo.get(0));
+		assertEquals("Hello, User!", capturedInfo.get(2));
+		assertEquals("2_3_4_0_2", capturedInfo.get(3));
 	}
+	
+	//@Test
+	public void testRefreshSession() {
+		Mockito.when(request.getParameter("Refresh")).thenReturn("Refresh");
+		
+		session = new Session(2, 3, 4, new ArrayList<String>(Arrays.asList("2")));
+		Mockito.when(client.sessionRead(Mockito.any(String.class), Mockito.any(Integer.class), Mockito.any(List.class))).thenReturn(session);
+		Mockito.when(client.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
+		
+		Cookie[] cookies = new Cookie[1];
+		cookies[0] = new Cookie("CS5300PROJ1SESSION", session.getCookieValue());
+		System.out.println("Curr cookie value : " + session.getCookieValue());
+		Mockito.when(request.getCookies()).thenReturn(cookies);
+		
+		try {
+			servlet.doGet(request, response);
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		ArgumentCaptor<Cookie> cookie = ArgumentCaptor.forClass(Cookie.class);
+		Mockito.verify(response).addCookie(cookie.capture());
+		
+		assertEquals("CS5300PROJ1SESSION", cookie.getValue().getName());
+		assertEquals("2_3_4_1_2", cookie.getValue().getValue());
+	}
+	
+	//@Test
+	public void testReplaceSession() {
+		Mockito.when(request.getParameter("Replace")).thenReturn("Some message");
+		
+		session = new Session(2, 3, 4, new ArrayList<String>(Arrays.asList("2")));
+		Mockito.when(client.sessionRead(Mockito.any(String.class), Mockito.any(Integer.class), Mockito.any(List.class))).thenReturn(session);
+		Mockito.when(client.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
+		
+		Cookie[] cookies = new Cookie[1];
+		cookies[0] = new Cookie("CS5300PROJ1SESSION", session.getCookieValue());
+		System.out.println("Curr cookie value : " + session.getCookieValue());
+		Mockito.when(request.getCookies()).thenReturn(cookies);
+		
+		try {
+			servlet.doGet(request, response);
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		ArgumentCaptor<Cookie> cookie = ArgumentCaptor.forClass(Cookie.class);
+		Mockito.verify(response).addCookie(cookie.capture());
+		
+		assertEquals("CS5300PROJ1SESSION", cookie.getValue().getName());
+		assertEquals("2_3_4_1_2", cookie.getValue().getValue());
+	}
+	
+	@Test
+	public void testLogoutSession() {
+		Mockito.when(request.getParameter("Logout")).thenReturn("Logout");
+		
+		session = new Session(2, 3, 4, new ArrayList<String>(Arrays.asList("2")));
+		Mockito.when(client.sessionRead(Mockito.any(String.class), Mockito.any(Integer.class), Mockito.any(List.class))).thenReturn(session);
+		Mockito.when(client.sessionWrite(Mockito.any(Session.class), Mockito.any(List.class))).thenReturn(locationData);
+		
+		Cookie[] cookies = new Cookie[1];
+		cookies[0] = new Cookie("CS5300PROJ1SESSION", session.getCookieValue());
+		System.out.println("Curr cookie value : " + session.getCookieValue());
+		Mockito.when(request.getCookies()).thenReturn(cookies);
+		
+		try {
+			servlet.doGet(request, response);
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		ArgumentCaptor<Cookie> cookie = ArgumentCaptor.forClass(Cookie.class);
+		Mockito.verify(response).addCookie(cookie.capture());
+		
+		ArgumentCaptor<String> info = ArgumentCaptor.forClass(String.class);
+		Mockito.verify(request, Mockito.times(6)).setAttribute(Mockito.any(String.class), info.capture());
+		List<String> capturedInfo = info.getAllValues();
+		
+		assertEquals("CS5300PROJ1SESSION", cookie.getValue().getName());
+		assertEquals("0", cookie.getValue().getMaxAge());
+	}
+	
 }
