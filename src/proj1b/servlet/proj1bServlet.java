@@ -30,7 +30,7 @@ import proj1b.util.*;
 /**
  * Servlet implementation class proj1bServlet
  */
-@WebServlet("/proj1bServlet")
+//@WebServlet("/proj1bServlet")
 public class proj1bServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static Integer localServerID; //TODO mapping
@@ -76,7 +76,8 @@ public class proj1bServlet extends HttpServlet {
 		response.setContentType("text/html");
 		
 		//initialized variables
-		Session session = null;
+		Session session =
+				null;
 		Cookie cookie = null;
 		Boolean logout = false;
 		String sessionID = null;
@@ -90,10 +91,12 @@ public class proj1bServlet extends HttpServlet {
 			for (Cookie co : cookies){
 				if (co.getName().equals(Constants.COOKIE_NAME)){
 					String[] cookieValues = co.getValue().split("\\" + Constants.SESSION_DELIMITER);
-					sessionID = cookieValues[0];
-					versionNumber = Integer.parseInt(cookieValues[1]);
-					bricks = Arrays.asList(cookieValues).subList(2, cookieValues.length);
+					System.out.println(Arrays.asList(cookieValues).toString());
+					sessionID = cookieValues[0] + Constants.SESSION_DELIMITER + cookieValues[1] + Constants.SESSION_DELIMITER + cookieValues[2];
+					versionNumber = Integer.parseInt(cookieValues[3]);
+					bricks = Arrays.asList(cookieValues).subList(4, cookieValues.length);
 					LOGGER.info("Found a cookie named CS5300PROJ1SESSION");
+					System.out.println("Cookie value : " + Arrays.asList(cookieValues));
 				}
 			}
 		}
@@ -109,6 +112,9 @@ public class proj1bServlet extends HttpServlet {
 				IPs.add(instancesIDtoIP.get(bricks.get(i)));
 			}
 			
+			
+			System.out.println("Bricks : " + bricks.toString());
+			System.out.println("Instances bricks: " + instancesIDtoIP.toString());
 			System.out.println("List of IPs in the map: " + IPs.toString());
 			
 			// send read request to retrieve session state from WQ servers

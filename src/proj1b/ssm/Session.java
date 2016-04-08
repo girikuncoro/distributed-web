@@ -48,9 +48,12 @@ public class Session{
 	}
 	
 	public static Session decode(String encodedSession){
-		List<String> fields = Arrays.asList(encodedSession.split(Constants.SESSION_DELIMITER));
+		System.out.println("Encoded session in Session object : " + encodedSession);
+		List<String> fields = Arrays.asList(encodedSession.split("\\"+Constants.SESSION_DELIMITER));
+		System.out.println("Fields in Session object : " + fields.toString());
 		return new Session(Integer.parseInt(fields.get(0)), Integer.parseInt(fields.get(1)), 
 				Integer.parseInt(fields.get(2)), fields.subList(5, fields.size()));
+		
 	}
 	
 	/**

@@ -47,9 +47,9 @@ public class RPCClient {
 				DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
 
 				String[] recvInfo = null;
-				// String serverID =
-				// RPCConfig.getServerID(recvPkt.getAddress().getHostAddress());
-				String serverID = null;
+				// String serverIP =
+				// RPCConfig.getserverIP(recvPkt.getAddress().getHostAddress());
+				String serverIP = null;
 				try {
 					do {
 						recvPkt.setLength(inBuf.length);
@@ -57,10 +57,10 @@ public class RPCClient {
 						socket.receive(recvPkt);
 						LOGGER.info("Reply received.");
 
-						serverID = recvPkt.getAddress().getHostAddress();
+						serverIP = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (serverID.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+					} while (serverIP.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
 							|| Integer.parseInt(recvInfo[1]) != RPCConfig.RPC_RESPONSE_OK);
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrIP);
@@ -122,9 +122,9 @@ public class RPCClient {
 				DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
 
 				String[] recvInfo = null;
-				// String serverID =
-				// RPCConfig.getServerID(recvPkt.getAddress().getHostAddress());
-				String serverID = null;
+				// String serverIP =
+				// RPCConfig.getserverIP(recvPkt.getAddress().getHostAddress());
+				String serverIP = null;
 				try {
 					do {
 						recvPkt.setLength(inBuf.length);
@@ -132,10 +132,11 @@ public class RPCClient {
 						socket.receive(recvPkt);
 						LOGGER.info("Reply received.");
 
-						serverID = recvPkt.getAddress().getHostAddress();
+						serverIP = recvPkt.getAddress().getHostAddress();
+						System.out.println("Getting host address: " + serverIP);
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (serverID.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+					} while (serverIP.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
 							|| Integer.parseInt(recvInfo[1]) != RPCConfig.RPC_RESPONSE_OK);
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrIP);
@@ -145,7 +146,7 @@ public class RPCClient {
 
 				RPCConfig.callID++;
 				Session result = Session.decode(recvInfo[2]);
-				result.setSourceServerIP(serverID);
+				result.setSourceServerIP(serverIP);
 				return result;
 //				return Session.decode(recvInfo[2]);
 			} catch (IOException e) {
@@ -198,7 +199,7 @@ public class RPCClient {
 				DatagramPacket recvPkt = new DatagramPacket(inBuf, inBuf.length);
 
 				String[] recvInfo = null;
-				String serverID = null;
+				String serverIP = null;
 				try {
 					do {
 						recvPkt.setLength(inBuf.length);
@@ -206,11 +207,11 @@ public class RPCClient {
 						socket.receive(recvPkt);
 						LOGGER.info("Reply received.");
 
-						serverID = recvPkt.getAddress().getHostAddress();
+						serverIP = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (serverID.compareTo(svrIP) != 0
-							|| RPCConfig.isValidID(Integer.parseInt(recvInfo[0])) && addToList(backupList, serverID) < Constants.WQ);
+					} while (serverIP.compareTo(svrIP) != 0
+							|| RPCConfig.isValidID(Integer.parseInt(recvInfo[0])) && addToList(backupList, serverIP) < Constants.WQ);
 					// 2 Should be WQ.[Changed 2 to WQ]
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrIP);

@@ -23,7 +23,7 @@ public class Constants {
 //	public static final int R = F + 1; // number of data bricks to send read requests
 //	public static final int WQ = F + 1; // number of data bricks that should contain a session
 //	public static final int W = 2 * F + 1; // number of data bricks to send write requests
-	public static final String SESSION_DELIMITER = "_";
+	public static final String SESSION_DELIMITER = "#";
 	public static final String InstancesDir = System.getProperty("user.home") + "/instances.txt";
 	public static final String rebootDir = System.getProperty("user.home") + "/rebootNum.txt";
 	public static final String localIPDir = System.getProperty("user.home") + "/local-ipv4";

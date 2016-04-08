@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 
 import proj1b.ssm.Session;
 
@@ -115,6 +116,8 @@ public class RPCStream {
 		
 		String[] req = RPCData.split(RPCConfig.RPC_DELIMITER);
 		DataWrite res = new DataWrite();
+		
+		System.out.println("extract write : " + Arrays.asList(req).toString());
 		
 		res.callID = req[0];
 		res.operationCode = Integer.parseInt(req[1]);

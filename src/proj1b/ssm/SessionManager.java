@@ -33,7 +33,7 @@ public class SessionManager{
 	});
 	
 	private SessionManager(){
-        cleanUp.start();
+//        cleanUp.start();
 	}
 	
 	public static SessionManager getInstance(){
