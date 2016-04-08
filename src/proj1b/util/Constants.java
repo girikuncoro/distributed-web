@@ -5,12 +5,18 @@ public class Constants {
 	 * System wide
 	 */
 	
-	// TODO: removing final for testing purpose, this params should be configurable from somewhere else
-	public static int N = 3; // number of total servers
+	public static int N = 1; // number of total servers
 	public static int F = 1; // F-resilient website
-	public static int R = F + 1; // number of data bricks to send read requests
-	public static int WQ = F + 1; // number of data bricks that should contain a session
-	public static int W = 2 * F + 1; // number of data bricks to send write requests
+	public static int R = 1; // number of data bricks to send read requests
+	public static int WQ = 1; // number of data bricks that should contain a session
+	public static int W = 1; // number of data bricks to send write requests
+	
+	// TODO: removing final for testing purpose, this params should be configurable from somewhere else
+//	public static int N = 3; // number of total servers
+//	public static int F = 1; // F-resilient website
+//	public static int R = F + 1; // number of data bricks to send read requests
+//	public static int WQ = F + 1; // number of data bricks that should contain a session
+//	public static int W = 2 * F + 1; // number of data bricks to send write requests
 	
 //	public static final int N = 3; // number of total servers
 //	public static final int F = 1; // F-resilient website
@@ -30,5 +36,5 @@ public class Constants {
 	 * Session
 	 */
 	public static final long SESSION_TIMEOUT = 600; // 10 minutes
-	public static final long SESSION_TIMEOUT_DELTA = 100;
+	public static final long SESSION_TIMEOUT_DELTA = 100; // 100ms
 }

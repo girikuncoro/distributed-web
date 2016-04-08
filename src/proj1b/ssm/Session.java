@@ -12,6 +12,7 @@ public class Session{
 	private long expirationTime; // creation time + time out time
 	private List<String> locationData; // ip-ip-ip....
 	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
+	private String source; // server IP where the session data is found
 	
 	public Session(Integer serID, Integer rebootNum, Integer sessID, List<String> locations){
 		sessionID = serID.toString() + Constants.SESSION_DELIMITER + rebootNum.toString() + Constants.SESSION_DELIMITER + sessID.toString();
@@ -19,6 +20,7 @@ public class Session{
 		message = "Hello, User!";
 		expirationTime = System.currentTimeMillis() + Constants.SESSION_TIMEOUT * 1000;
 		locationData = locations;
+		source = serID.toString();
 		LOGGER.info("Created a new session: " + sessionID);
 	}
 	
@@ -99,6 +101,18 @@ public class Session{
 	public List<String> getLocationData(){
 		return locationData;
 	}
+	
+	public String getLocations(){
+		StringBuilder sb = new StringBuilder();
+		if (locationData != null && locationData.size() > 0){
+			for (int i = 0; i < locationData.size() - 1; i++){
+				sb.append(locationData.get(i));
+				sb.append(Constants.SESSION_DELIMITER);
+			}
+			sb.append(locationData.get(locationData.size() - 1));
+		}
+		return sb.toString();
+	}
 
 	public int addLocation(String location) {
 		locationData.add(location);
@@ -113,6 +127,14 @@ public class Session{
 		locationData = newLocations;
 		LOGGER.info("Reset session location data");
 		return locationData.size();
+	}
+	
+	public String getSourceServerIP() {
+		return source;
+	}
+
+	public void setSourceServerIP(String srcServerIP) {
+		this.source = srcServerIP;
 	}
 	
 }

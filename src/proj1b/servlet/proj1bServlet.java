@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import proj1b.rpc.RPCClient;
+import proj1b.rpc.*;
 import proj1b.ssm.*;
 import proj1b.util.*;
 
@@ -41,7 +41,9 @@ public class proj1bServlet extends HttpServlet {
 	private static Map<String, Integer> instancesIPtoID = new ConcurrentHashMap<String, Integer>(); //<serverIP, serverID>
 	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 	private static RPCClient client = new RPCClient();
-//	RequestDispatcher dispatcher;
+//	private static RPCServer server = new RPCServer();
+//	private static Thread serverThread = new Thread(server);
+
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -51,6 +53,8 @@ public class proj1bServlet extends HttpServlet {
         buildInstancesMap();
         getRebootNum();
         getLocalServerID();
+//    	serverThread.setName("server");
+//    	serverThread.start();
         LOGGER.info("Servlet instantialized");
     }
     
@@ -60,6 +64,8 @@ public class proj1bServlet extends HttpServlet {
     	buildInstancesMap();
         getRebootNum();
         getLocalServerID();
+//    	serverThread.setName("server");
+//    	serverThread.start();
         LOGGER.info("Servlet instantialized");
     }
 
@@ -103,15 +109,21 @@ public class proj1bServlet extends HttpServlet {
 				IPs.add(instancesIDtoIP.get(bricks.get(i)));
 			}
 			
+			System.out.println("List of IPs in the map: " + IPs.toString());
+			
 			// send read request to retrieve session state from WQ servers
 			session = client.sessionRead(sessionID, versionNumber, IPs);
-			LOGGER.info("Retrieved session : " + session.encode());
+			
+			// set attribute for source server
+			if (session != null){
+				request.setAttribute("sourceServerID", instancesIPtoID.get(session.getSourceServerIP()));
+			}
 			
 			if (session == null || session.getExpirationTime() < System.currentTimeMillis()){
 				// removed session or invalid session (timed out)
 				session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
+				LOGGER.info("Retrieved session from peers or created a new session for removed/invalid session");
 			}
-			LOGGER.info("Retrieved session from peers or created a new session for removed/invalid session");
 		}
 		
 		// replace or refresh
@@ -136,10 +148,12 @@ public class proj1bServlet extends HttpServlet {
 				LOGGER.info("Less than W number of bricks for writing request.");
 			}
 		}
+		System.out.println("IPs for write request " + IPs.toString());
 		// send write request and get returned IPs where the session is updated
 		List<String> locations = client.sessionWrite(session, IPs);
+//		System.out.println("Server IPs from session write " + locations.toString());
 		// convert IPs back to server IDs
-		bricks = new ArrayList<String>(locations.size());
+		bricks = new ArrayList<String>();
 		if (locations != null){
 			for (int i = 0; i < locations.size(); i++){
 				bricks.add(instancesIPtoID.get(locations.get(i)).toString());
@@ -150,31 +164,43 @@ public class proj1bServlet extends HttpServlet {
 		
 		// update cookie
 		cookie = new Cookie(Constants.COOKIE_NAME, session.getCookieValue());
-		cookie.setMaxAge((int)Constants.MAX_AGE);
+		if (logout){
+			cookie.setMaxAge(0);
+		}else{
+			cookie.setMaxAge((int)Constants.MAX_AGE);
+		}
 		response.addCookie(cookie);
 		LOGGER.info("addcookie is here");
 		// TODO set cookie domain, see instruction P7
 		
 		// set output information
-		String info = logout ? "You have logged out. So long!" : session.getMessage(); 
-		String cookieValue = logout? "Logged out. No cookie value." : cookie.getValue();
-		String expTime = logout? "Logged out. No expiration time." : new Date(session.getExpirationTime()).toString();
-		int version = logout? 0 : session.getVersionNumber();
+		request.setAttribute("serverID", localServerID);
+		request.setAttribute("rebootNum", rebootNum);
+		
 		String outSessionID = logout? "Logged out. No session." : session.getSessionID();
-		Date date = new Date(System.currentTimeMillis());
-
 		request.setAttribute("sessionID", outSessionID);
-		request.setAttribute("currentDate", date.toString());
-		request.setAttribute("info", info);
-		request.setAttribute("cookieID", cookieValue);
-		request.setAttribute("expTime", expTime);
+		
+		int version = logout? 0 : session.getVersionNumber();
 		request.setAttribute("sessionVersion", version);
+		
+		Date date = new Date(System.currentTimeMillis());
+		request.setAttribute("currentDate", date.toString());
+		
+		String info = logout ? "You have logged out. So long!" : session.getMessage(); 
+		request.setAttribute("info", info);
+		
+		String cookieValue = logout? "Logged out. No cookie value." : cookie.getValue();
+		request.setAttribute("cookieID", cookieValue);
+		
+		String expTime = logout? "Logged out. No expiration time." : new Date(session.getExpirationTime()).toString();
+		request.setAttribute("expTime", expTime);
+
+		request.setAttribute("cookieMetadata", session.getLocations());
+//		request.setAttribute("cookieDomain", cookie.getDomain()); // TODO wait for instructions on cookie domain
 		
 		// request forwarding
 		RequestDispatcher dispatcher = request.getRequestDispatcher("content.jsp");
 		dispatcher.forward(request, response);
-//		dispatcher = request.getRequestDispatcher("content.jsp");
-//		dispatcher.forward(request, response);
 	}
 
 	/**

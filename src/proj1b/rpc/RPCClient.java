@@ -25,8 +25,8 @@ public class RPCClient {
 		super();
 	}
 
-	public Session sessionNoOp(String sessionID, int versionNumber, List<String> svrIDs) {
-		for (String svrID : svrIDs) {
+	public Session sessionNoOp(String sessionID, int versionNumber, List<String> svrIPs) {
+		for (String svrIP : svrIPs) {
 			DatagramSocket socket = null;
 			try {
 				socket = new DatagramSocket();
@@ -37,7 +37,7 @@ public class RPCClient {
 										new String[] { String.valueOf(RPCConfig.callID),
 												String.valueOf(RPCConfig.NO_OP_CODE), sessionID,
 												String.valueOf(versionNumber) }));
-				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrID),
+				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrIP),
 						RPCConfig.SERVER_PORT);
 				LOGGER.info("Packet ready to send.");
 				socket.send(sendPkt);
@@ -60,10 +60,10 @@ public class RPCClient {
 						serverID = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (serverID.compareTo(svrID) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+					} while (serverID.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
 							|| Integer.parseInt(recvInfo[1]) != RPCConfig.RPC_RESPONSE_OK);
 				} catch (SocketTimeoutException e) {
-					System.out.println("Socket Timeout: " + svrID);
+					System.out.println("Socket Timeout: " + svrIP);
 					recvPkt = null;
 					continue;
 				}
@@ -72,7 +72,7 @@ public class RPCClient {
 				// return Session.decode(recvInfo[2]);
 				return null;
 			} catch (IOException e) {
-				System.out.println("IOException in communicating with server ID: " + svrID);
+				System.out.println("IOException in communicating with server ID: " + svrIP);
 				e.printStackTrace();
 			} finally {
 				socket.close();
@@ -93,13 +93,15 @@ public class RPCClient {
 	 *            Session ID to be included in the read RPC.
 	 * @param versionNumber
 	 *            Version Number to be included in the read RPC.
-	 * @param svrIDs
+	 * @param svrIPs
 	 *            A list of IP addresses which might contain the session
 	 *            information.
 	 * @return The session fetched from other nodes.
 	 */
-	public Session sessionRead(String sessionID, int versionNumber, List<String> svrIDs) {
-		for (String svrID : svrIDs) {
+	public Session sessionRead(String sessionID, int versionNumber, List<String> svrIPs) {
+		for (String svrIP : svrIPs) {
+			System.out.println("Trying to read from: " + svrIP);
+			
 			DatagramSocket socket = null;
 			try {
 				socket = new DatagramSocket();
@@ -110,7 +112,7 @@ public class RPCClient {
 										new String[] { String.valueOf(RPCConfig.callID),
 												String.valueOf(RPCConfig.READ_CODE), sessionID,
 												String.valueOf(versionNumber) }));
-				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrID),
+				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrIP),
 						RPCConfig.SERVER_PORT);
 				LOGGER.info("Packet ready to send.");
 				socket.send(sendPkt);
@@ -133,18 +135,21 @@ public class RPCClient {
 						serverID = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (serverID.compareTo(svrID) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+					} while (serverID.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
 							|| Integer.parseInt(recvInfo[1]) != RPCConfig.RPC_RESPONSE_OK);
 				} catch (SocketTimeoutException e) {
-					System.out.println("Socket Timeout: " + svrID);
+					System.out.println("Socket Timeout: " + svrIP);
 					recvPkt = null;
 					continue;
 				}
 
 				RPCConfig.callID++;
-				return Session.decode(recvInfo[2]);
+				Session result = Session.decode(recvInfo[2]);
+				result.setSourceServerIP(serverID);
+				return result;
+//				return Session.decode(recvInfo[2]);
 			} catch (IOException e) {
-				System.out.println("IOException in communicating with server ID: " + svrID);
+				System.out.println("IOException in communicating with server ID: " + svrIP);
 				e.printStackTrace();
 			} finally {
 				socket.close();
@@ -162,15 +167,18 @@ public class RPCClient {
 	 * 
 	 * @param session
 	 *            The session we need to write to other servers.
-	 * @param svrIDs
+	 * @param svrIPs
 	 *            A list of IP addresses which might contain the session
 	 *            information.
 	 */
-	public List<String> sessionWrite(Session session, List<String> svrIDs) {
+	public List<String> sessionWrite(Session session, List<String> svrIPs) {
 		List<String> backupList = new ArrayList<String>();
 		String localAddress = null;
 		
-		for (String svrID : svrIDs) {
+		
+		
+		for (String svrIP : svrIPs) {
+			System.out.println("Trying to write to : " + svrIP);
 			DatagramSocket socket = null;
 			try {
 				socket = new DatagramSocket();
@@ -179,7 +187,7 @@ public class RPCClient {
 				
 				byte[] sendBytes = RPCStream.marshall(String.join(RPCConfig.RPC_DELIMITER, new String[] {
 						String.valueOf(RPCConfig.callID), String.valueOf(RPCConfig.WRITE_CODE), session.encode() }));
-				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrID),
+				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrIP),
 						RPCConfig.SERVER_PORT);
 				
 				LOGGER.info("Packet ready to send.");
@@ -201,16 +209,16 @@ public class RPCClient {
 						serverID = recvPkt.getAddress().getHostAddress();
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (serverID.compareTo(svrID) != 0
-							|| RPCConfig.isValidID(Integer.parseInt(recvInfo[0])) && addToList(backupList, serverID) <= Constants.WQ);
+					} while (serverID.compareTo(svrIP) != 0
+							|| RPCConfig.isValidID(Integer.parseInt(recvInfo[0])) && addToList(backupList, serverID) < Constants.WQ);
 					// 2 Should be WQ.[Changed 2 to WQ]
 				} catch (SocketTimeoutException e) {
-					System.out.println("Socket Timeout: " + svrID);
+					System.out.println("Socket Timeout: " + svrIP);
 					recvPkt = null;
 					continue;
 				}
 			} catch (IOException e) {
-				System.out.println("IOException in communicating with server ID: " + svrID);
+				System.out.println("IOException in communicating with server ID: " + svrIP);
 				e.printStackTrace();
 			} finally {
 				socket.close();
@@ -218,7 +226,7 @@ public class RPCClient {
 		}
 
 		RPCConfig.callID++;
-		if (backupList.size() <= Constants.WQ) { // Again, 2 should be WQ. [Changed]
+		if (backupList.size() < Constants.WQ) { // Again, 2 should be WQ. [Changed]
 			LOGGER.info("Not enough backup.");
 			return null;
 		}
@@ -234,8 +242,8 @@ public class RPCClient {
 	}
 	
 	//
-	// public void sessionUpdate(Session session, List<String> svrIDs) {
-	// for (String svrID : svrIDs) {
+	// public void sessionUpdate(Session session, List<String> svrIPs) {
+	// for (String svrIP : svrIPs) {
 	// DatagramSocket socket = null;
 	// try {
 	// socket = new DatagramSocket();
@@ -244,12 +252,12 @@ public class RPCClient {
 	// String.valueOf(RPCConfig.callID), String.valueOf(RPCConfig.WRITE_CODE),
 	// session.encode() }));
 	// DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length,
-	// InetAddress.getByName(svrID),
+	// InetAddress.getByName(svrIP),
 	// RPCConfig.SERVER_PORT);
 	// socket.send(sendPkt);
 	// } catch (IOException e) {
 	// System.out.println("IOException in communicating with server ID: " +
-	// svrID);
+	// svrIP);
 	// e.printStackTrace();
 	// } finally {
 	// socket.close();
