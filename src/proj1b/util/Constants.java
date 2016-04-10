@@ -31,10 +31,11 @@ public class Constants {
 	 * Cookie
 	 */
 	public static final String COOKIE_NAME = "CS5300PROJ1SESSION";
-	public static final long MAX_AGE = 600; // 10 minutes
+	public static final int MAX_AGE = 600; // 10 minutes
 	/*
 	 * Session
 	 */
 	public static final long SESSION_TIMEOUT = 600; // 10 minutes
 	public static final long SESSION_TIMEOUT_DELTA = 100; // 100ms
+	public static final String DEFAULT_MESSAGE = "Hello, User!";
 }
