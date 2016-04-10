@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <body>
-<p>netID: yf263, gk256, sz428 
+<p>netID: yf263, gk256, sz428
 	<br> Currently, Server ID ${serverID} with reboot number ${rebootNum} is executing the client request.
 	<br> The session data was found on server ID ${sourceServerID}
 	<br> Session: ${sessionID} 

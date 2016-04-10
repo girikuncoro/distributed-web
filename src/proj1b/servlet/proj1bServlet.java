@@ -63,6 +63,7 @@ public class proj1bServlet extends HttpServlet {
 		String sessionID = null;
 		int versionNumber = 0;
 		List<String> svrIDs = null;
+		String sourceServerID = null;
 
 		// iterate over cookies and find the related one
 		Cookie[] cookies = request.getCookies();
@@ -91,9 +92,10 @@ public class proj1bServlet extends HttpServlet {
 			List<String> svrIDs_R = new ArrayList<String>(Constants.R);
 			for (int n : randomNumbers)
 				svrIDs_R.add(svrIDs.get(n));
-			session = client.sessionRead(sessionID, versionNumber, svrIDs_R);
-
-			// TODO: sessionRead should return both session and the server ID where we get this session
+			
+			SessionInServer sessionInServer = client.sessionRead(sessionID, versionNumber, svrIDs_R);
+			session = sessionInServer.getSession();
+			sourceServerID = sessionInServer.getServerID();
 
 			if (session == null || session.getExpirationTime() < System.currentTimeMillis()) {
 				// removed session or invalid session (timed out)
@@ -143,6 +145,7 @@ public class proj1bServlet extends HttpServlet {
 		// set output information
 		request.setAttribute("serverID", Utils.getLocalServerID());
 		request.setAttribute("rebootNum", Utils.getRebootNum());
+		request.setAttribute("sourceServerID", sourceServerID);
 
 		String outSessionID = logout ? "Logged out. No session." : session.getSessionID();
 		request.setAttribute("sessionID", outSessionID);

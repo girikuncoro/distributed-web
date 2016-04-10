@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import proj1b.ssm.Session;
+import proj1b.ssm.SessionInServer;
 import proj1b.util.*;
 
 import java.net.DatagramPacket;
@@ -38,7 +39,7 @@ public class RPCClient {
 	 *            information.
 	 * @return The session fetched from other nodes.
 	 */
-	public Session sessionRead(String sessionID, int versionNumber, List<String> svrIDs) {
+	public SessionInServer sessionRead(String sessionID, int versionNumber, List<String> svrIDs) {
 		for (String svrID : svrIDs) {
 			String svrIP = Utils.getSvrIPfromID(svrID);
 			LOGGER.info("Trying to read from server: " + svrID + ", whose IP address is: " + svrIP);
@@ -81,7 +82,7 @@ public class RPCClient {
 				}
 
 				RPCConfig.callID++;
-				return Session.decode(recvInfo[2]);
+				return new SessionInServer(Session.decode(recvInfo[2]), svrID);
 			} catch (IOException e) {
 				System.out.println("IOException in communicating with server ID: " + svrID);
 				e.printStackTrace();
@@ -107,7 +108,6 @@ public class RPCClient {
 	 */
 	public List<String> sessionWrite(Session session, List<String> svrIDs) {
 		List<String> backupList = new ArrayList<String>();
-		String localAddress = null;
 
 		for (String svrID : svrIDs) {
 			String svrIP = Utils.getSvrIPfromID(svrID);
@@ -115,7 +115,6 @@ public class RPCClient {
 			DatagramSocket socket = null;
 			try {
 				socket = new DatagramSocket();
-				localAddress = socket.getLocalAddress().getHostAddress();
 				socket.setSoTimeout(RPCConfig.SOCKET_TIMEOUT);
 
 				byte[] sendBytes = RPCStream.marshall(String.join(RPCConfig.RPC_DELIMITER,
