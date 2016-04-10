@@ -64,7 +64,7 @@ public class proj1bServlet extends HttpServlet {
 		int versionNumber = 0;
 		List<String> svrIDs = null;
 		String sourceServerID = null;
-		
+
 		// This is a comment!!!!
 
 		// iterate over cookies and find the related one
@@ -73,8 +73,9 @@ public class proj1bServlet extends HttpServlet {
 			for (Cookie co : cookies) {
 				if (co.getName().equals(Constants.COOKIE_NAME)) {
 					String[] cookieValues = co.getValue().split("\\" + Constants.SESSION_DELIMITER);
-					
-					sessionID = String.join(Constants.SESSION_DELIMITER, cookieValues[0], cookieValues[1], cookieValues[2]);
+
+					sessionID = String.join(Constants.SESSION_DELIMITER, cookieValues[0], cookieValues[1],
+							cookieValues[2]);
 					versionNumber = Integer.parseInt(cookieValues[3]);
 					svrIDs = Arrays.asList(cookieValues).subList(4, cookieValues.length);
 					LOGGER.info("Found a cookie named CS5300PROJ1SESSION");
@@ -83,7 +84,8 @@ public class proj1bServlet extends HttpServlet {
 			}
 		}
 
-		// create a new session if an arriving client request doesn't have a related cookie
+		// create a new session if an arriving client request doesn't have a
+		// related cookie
 		if (sessionID == null) {
 			session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
 			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session "
@@ -94,10 +96,10 @@ public class proj1bServlet extends HttpServlet {
 			List<String> svrIDs_R = new ArrayList<String>(Constants.R);
 			for (int n : randomNumbers)
 				svrIDs_R.add(svrIDs.get(n));
-			
+
 			SessionInServer sessionInServer = client.sessionRead(sessionID, versionNumber, svrIDs_R);
-			
-			if(sessionInServer == null) {
+
+			if (sessionInServer == null) {
 				session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
 			} else {
 				session = sessionInServer.getSession();
@@ -135,8 +137,18 @@ public class proj1bServlet extends HttpServlet {
 
 		List<String> locations = client.sessionWrite(session, svrIDs_W);
 
-		if (locations == null)
+		if (locations == null) {
 			LOGGER.info("RPC Client returns Null from sessionWrite()");
+//
+//			String site = new String("ErrorPage.jsp");
+//
+//			response.setStatus(response.SC_MOVED_TEMPORARILY);
+//			response.setHeader("Location", site);
+//			
+			RequestDispatcher dispatcher = request.getRequestDispatcher("ErrorPage.jsp");
+			dispatcher.forward(request, response);
+			return;
+		}
 
 		// update cookie
 		Cookie cookie = new Cookie(Constants.COOKIE_NAME, session.getCookieValue(locations));
