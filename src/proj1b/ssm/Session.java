@@ -51,8 +51,13 @@ public class Session{
 		System.out.println("Encoded session in Session object : " + encodedSession);
 		List<String> fields = Arrays.asList(encodedSession.split("\\"+Constants.SESSION_DELIMITER));
 		System.out.println("Fields in Session object : " + fields.toString());
-		return new Session(Integer.parseInt(fields.get(0)), Integer.parseInt(fields.get(1)), 
+		if (fields.size() > 4){
+			return new Session(Integer.parseInt(fields.get(0)), Integer.parseInt(fields.get(1)), 
 				Integer.parseInt(fields.get(2)), fields.subList(5, fields.size()));
+		}else{
+			return new Session(Integer.parseInt(fields.get(0)), Integer.parseInt(fields.get(1)), 
+					Integer.parseInt(fields.get(2)), new ArrayList<String>());
+		}
 		
 	}
 	
@@ -128,7 +133,7 @@ public class Session{
 	
 	public int resetLocation(List<String> newLocations){
 		locationData = newLocations;
-		LOGGER.info("Reset session location data");
+		LOGGER.info("Updated session location data");
 		return locationData.size();
 	}
 	

@@ -208,6 +208,7 @@ public class RPCClient {
 						LOGGER.info("Reply received.");
 
 						serverIP = recvPkt.getAddress().getHostAddress();
+						System.out.println("Server IP in session write " + serverIP);
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
 					} while (serverIP.compareTo(svrIP) != 0

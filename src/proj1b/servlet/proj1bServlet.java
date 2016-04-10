@@ -76,11 +76,11 @@ public class proj1bServlet extends HttpServlet {
 		response.setContentType("text/html");
 		
 		//initialized variables
-		Session session =
-				null;
+		Session session = null;
 		Cookie cookie = null;
 		Boolean logout = false;
 		String sessionID = null;
+		Integer serverID = null;
 		int versionNumber = 0;
 		List<String> bricks = null;
 		List<String> IPs = null;
@@ -109,7 +109,7 @@ public class proj1bServlet extends HttpServlet {
 			// convert server ID to server IP
 			IPs = new ArrayList<String>(bricks.size());
 			for (int i = 0; i < bricks.size(); i++){
-				IPs.add(instancesIDtoIP.get(bricks.get(i)));
+				IPs.add(instancesIDtoIP.get(Integer.parseInt(bricks.get(i))));
 			}
 			
 			
@@ -157,16 +157,21 @@ public class proj1bServlet extends HttpServlet {
 		System.out.println("IPs for write request " + IPs.toString());
 		// send write request and get returned IPs where the session is updated
 		List<String> locations = client.sessionWrite(session, IPs);
-//		System.out.println("Server IPs from session write " + locations.toString());
 		// convert IPs back to server IDs
 		bricks = new ArrayList<String>();
 		if (locations != null){
+			System.out.println("Server IPs from session write " + locations.toString());
 			for (int i = 0; i < locations.size(); i++){
-				bricks.add(instancesIPtoID.get(locations.get(i)).toString());
+				serverID = instancesIPtoID.get(locations.get(i));
+				if (serverID != null){
+					bricks.add(serverID.toString());
+				}
+//				bricks.add(instancesIPtoID.get(locations.get(i)).toString());
 			}
+		}else{
+			LOGGER.info("RPC Client returns Null from sessionWrite()");
 		}
 		session.resetLocation(bricks);
-		LOGGER.info("Updated session location data");
 		
 		// update cookie
 		cookie = new Cookie(Constants.COOKIE_NAME, session.getCookieValue());
@@ -176,7 +181,7 @@ public class proj1bServlet extends HttpServlet {
 			cookie.setMaxAge((int)Constants.MAX_AGE);
 		}
 		response.addCookie(cookie);
-		LOGGER.info("addcookie is here");
+		LOGGER.info("add cookie is here");
 		// TODO set cookie domain, see instruction P7
 		
 		// set output information
@@ -192,7 +197,7 @@ public class proj1bServlet extends HttpServlet {
 		Date date = new Date(System.currentTimeMillis());
 		request.setAttribute("currentDate", date.toString());
 		
-		String info = logout ? "You have logged out. So long!" : session.getMessage(); 
+		String info = session.getMessage(); 
 		request.setAttribute("info", info);
 		
 		String cookieValue = logout? "Logged out. No cookie value." : cookie.getValue();
