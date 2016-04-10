@@ -142,7 +142,7 @@ public class RPCClient {
 						System.out.println("Server IP in session write " + receivedServerIP);
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (receivedServerIP.compareTo(svrIP) != 0 || RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+					} while (receivedServerIP.compareTo(svrIP) == 0 && RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
 							&& addToList(backupList, svrID) < Constants.WQ);
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrIP);
@@ -158,7 +158,7 @@ public class RPCClient {
 		}
 
 		RPCConfig.callID++;
-		if(backupList.size() >= Constants.WQ) return backupList;
+		if(backupList.size() == Constants.WQ) return backupList;
 		else {
 			LOGGER.info("Not enough backup.");
 			return null;

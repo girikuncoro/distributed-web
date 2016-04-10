@@ -138,13 +138,7 @@ public class proj1bServlet extends HttpServlet {
 		List<String> locations = client.sessionWrite(session, svrIDs_W);
 
 		if (locations == null) {
-			LOGGER.info("RPC Client returns Null from sessionWrite()");
-//
-//			String site = new String("ErrorPage.jsp");
-//
-//			response.setStatus(response.SC_MOVED_TEMPORARILY);
-//			response.setHeader("Location", site);
-//			
+			LOGGER.info("RPC Client returns Null from sessionWrite()");	
 			RequestDispatcher dispatcher = request.getRequestDispatcher("ErrorPage.jsp");
 			dispatcher.forward(request, response);
 			return;
