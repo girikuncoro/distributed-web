@@ -28,15 +28,13 @@ public class RPCSessionReadTest {
 		RPCServer server = new RPCServer();
 		RPCClient client1 = new RPCClient();
 		SessionManager ssm = SessionManager.getInstance();
-		
-//		RPCConfig.initializeMap(ipAddresses);
-		
+				
 		Thread serverThread = new Thread(server);
 		serverThread.setName("server");
 		serverThread.start();
 		
-		Session session1 = new Session("1");
-		Session session2 = new Session("1");
+		Session session1 = new Session("1", 0, 0);
+		Session session2 = new Session("1", 0, 1);
 		session2.refresh();
 		
 		ssm.addSession(session1);
