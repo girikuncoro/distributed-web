@@ -142,8 +142,8 @@ public class RPCClient {
 						System.out.println("Server IP in session write " + receivedServerIP);
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (receivedServerIP.compareTo(svrIP) == 0 && RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
-							&& addToList(backupList, svrID) < Constants.WQ);
+					} while (receivedServerIP.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+							|| addToList(backupList, svrID) < Constants.WQ);
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrIP);
 					recvPkt = null;
@@ -167,6 +167,7 @@ public class RPCClient {
 
 	private int addToList(List<String> list, String item) {
 		list.add(item);
+		System.out.println(list.toString());
 		return list.size();
 	}
 }
