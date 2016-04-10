@@ -47,19 +47,19 @@ public class RPCRemoteTest {
 		client1.sessionWrite(newSession, l);
 		
 		Session returnSession;
-		returnSession = client1.sessionRead("1", 1, l);
+		returnSession = client1.sessionRead("1", 1, l).getSession();
 		if(returnSession == null) LOGGER.info("Return session is null for the case 1.");
 		else LOGGER.info("Return serialized session object for case 1: " + returnSession.encode());
 		
-		returnSession = client1.sessionRead("1", 0, l);
+		returnSession = client1.sessionRead("1", 0, l).getSession();
 		if(returnSession == null) LOGGER.info("Return session is null for the case 2.");
 		else LOGGER.info("Return serialized session object for case 2: " + returnSession.encode());
 		
-		returnSession = client1.sessionRead("1", 2, l);
+		returnSession = client1.sessionRead("1", 2, l).getSession();
 		if(returnSession == null) LOGGER.info("Return session is null for the case 3.");
 		else LOGGER.info("Return serialized session object for case 3: " + returnSession.encode());
 		
-		returnSession = client1.sessionRead("2", 0, l);
+		returnSession = client1.sessionRead("2", 0, l).getSession();
 		if(returnSession == null) LOGGER.info("Return session is null for the case 4.");
 		else LOGGER.info("Return serialized session object for case 4: " + returnSession.encode());
 	}
