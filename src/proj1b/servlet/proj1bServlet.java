@@ -96,8 +96,13 @@ public class proj1bServlet extends HttpServlet {
 				svrIDs_R.add(svrIDs.get(n));
 			
 			SessionInServer sessionInServer = client.sessionRead(sessionID, versionNumber, svrIDs_R);
-			session = sessionInServer.getSession();
-			sourceServerID = sessionInServer.getServerID();
+			
+			if(sessionInServer == null) {
+				session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
+			} else {
+				session = sessionInServer.getSession();
+				sourceServerID = sessionInServer.getServerID();
+			}
 
 			if (session == null || session.getExpirationTime() < System.currentTimeMillis()) {
 				// removed session or invalid session (timed out)
