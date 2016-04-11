@@ -65,8 +65,6 @@ public class proj1bServlet extends HttpServlet {
 		List<String> svrIDs = null;
 		String sourceServerID = null;
 
-		// This is a comment!!!!
-
 		// iterate over cookies and find the related one
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
@@ -84,8 +82,7 @@ public class proj1bServlet extends HttpServlet {
 			}
 		}
 
-		// create a new session if an arriving client request doesn't have a
-		// related cookie
+		// create a new session if an arriving client request doesn't have a related cookie
 		if (sessionID == null) {
 			session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
 			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session "

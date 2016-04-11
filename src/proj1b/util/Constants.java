@@ -37,6 +37,7 @@ public class Constants {
 	 * Session
 	 */
 	public static final long SESSION_TIMEOUT = 600; // 10 minutes
+	public static final long SESSION_CLEANER_INTERVAL = 60; // 1 minute
 	public static final long SESSION_TIMEOUT_DELTA = 100; // 100ms
 	public static final String DEFAULT_MESSAGE = "Hello, User!";
 }
