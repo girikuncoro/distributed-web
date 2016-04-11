@@ -59,8 +59,8 @@ public class proj1bServlet extends HttpServlet {
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 //		response.setContentType("text/html");
-		response.setContentType("appilcation/json");
-		response.setCharacterEncoding("utf-8");
+//		response.setContentType("application/json");
+//		response.setCharacterEncoding("utf-8");
 
 		// initialized variables
 		Session session = null;
@@ -155,6 +155,8 @@ public class proj1bServlet extends HttpServlet {
 
 		// TODO set cookie domain, see instruction P7
 		
+		response.setContentType("application/json");
+		response.setCharacterEncoding("utf-8");
 		response.addCookie(cookie);
 		PrintWriter out = response.getWriter();
 		
@@ -209,8 +211,8 @@ public class proj1bServlet extends HttpServlet {
 		// wait for instructions on cookie domain
 
 		// request forwarding
-		RequestDispatcher dispatcher = request.getRequestDispatcher("content.jsp");
-		dispatcher.forward(request, response);
+//		RequestDispatcher dispatcher = request.getRequestDispatcher("content.jsp");
+//		dispatcher.forward(request, response);
 	}
 
 	/**
