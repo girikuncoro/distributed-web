@@ -133,6 +133,8 @@ public class RPCClient {
 				String receivedServerIP = null;
 				try {
 					do {
+						if(backupList.size() == Constants.WQ) break;
+						
 						recvPkt.setLength(inBuf.length);
 						LOGGER.info("Ready to receive reply.");
 						socket.receive(recvPkt);
@@ -158,6 +160,7 @@ public class RPCClient {
 		}
 
 		RPCConfig.callID++;
+		System.out.println("!!!!!!!!BackupList is: " + backupList.toString());
 		if(backupList.size() == Constants.WQ) return backupList;
 		else {
 			LOGGER.info("Not enough backup.");
