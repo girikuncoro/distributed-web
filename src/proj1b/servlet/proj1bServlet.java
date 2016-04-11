@@ -1,6 +1,7 @@
 package proj1b.servlet;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -18,6 +19,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONObject;
 
 import proj1b.rpc.*;
 import proj1b.ssm.*;
@@ -55,7 +58,9 @@ public class proj1bServlet extends HttpServlet {
 	 *      response)
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
+//		response.setContentType("text/html");
+		response.setContentType("appilcation/json");
+		response.setCharacterEncoding("utf-8");
 
 		// initialized variables
 		Session session = null;
@@ -148,34 +153,58 @@ public class proj1bServlet extends HttpServlet {
 		else
 			cookie.setMaxAge(Constants.MAX_AGE);
 
-		response.addCookie(cookie);
-		LOGGER.info("add cookie is here");
 		// TODO set cookie domain, see instruction P7
-
-		// set output information
-		request.setAttribute("serverID", Utils.getLocalServerID());
-		request.setAttribute("rebootNum", Utils.getRebootNum());
-		request.setAttribute("sourceServerID", sourceServerID);
-
+		
+		response.addCookie(cookie);
+		PrintWriter out = response.getWriter();
+		
+		JSONObject json = new JSONObject();
+		
+		json.put("serverID", Utils.getLocalServerID());
+		json.put("rebootNum", Utils.getRebootNum());
+		json.put("sourceServerID", sourceServerID);
+		
 		String outSessionID = logout ? "Logged out. No session." : session.getSessionID();
-		request.setAttribute("sessionID", outSessionID);
-
+		json.put("sessionID", outSessionID);
+		
 		int version = logout ? 0 : session.getVersionNumber();
-		request.setAttribute("sessionVersion", version);
-
+		json.put("sessionVersion", version);
+		
 		Date date = new Date(System.currentTimeMillis());
-		request.setAttribute("currentDate", date.toString());
-
+		json.put("currentDate", date.toString());
+		
 		String info = session.getMessage();
-		request.setAttribute("info", info);
-
+		json.put("info", info);
+		
 		String cookieValue = logout ? "Logged out. No cookie value." : cookie.getValue();
-		request.setAttribute("cookieID", cookieValue);
-
+		json.put("cookieID", cookieValue);
+		
 		String expTime = logout ? "Logged out. No expiration time." : new Date(session.getExpirationTime()).toString();
-		request.setAttribute("expTime", expTime);
+		json.put("expTime", expTime);
+		
+		json.put("cookieMetadata", locations);
+		
+		out.print(json.toString());
 
-		request.setAttribute("cookieMetadata", locations);
+//		// set output information
+//		request.setAttribute("serverID", Utils.getLocalServerID());
+//		request.setAttribute("rebootNum", Utils.getRebootNum());
+//		request.setAttribute("sourceServerID", sourceServerID);
+
+		
+//		request.setAttribute("sessionID", outSessionID);
+//
+//		request.setAttribute("sessionVersion", version);
+//		
+//		request.setAttribute("currentDate", date.toString());
+
+//		request.setAttribute("info", info);
+
+//		request.setAttribute("cookieID", cookieValue);
+
+//		request.setAttribute("expTime", expTime);
+
+//		request.setAttribute("cookieMetadata", locations);
 		// request.setAttribute("cookieDomain", cookie.getDomain()); // TODO
 		// wait for instructions on cookie domain
 
