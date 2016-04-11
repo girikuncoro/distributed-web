@@ -29,11 +29,6 @@ public class Session {
 		this(serID, rebootNum, sessID, 0);
 	}
 
-	// // for testing
-	// public Session(String sessionID) {
-	// this(0, 0, Integer.parseInt(sessionID), null);
-	// }
-	//
 	/**
 	 * Encode session information as cookie value. For example, "1_2_4_11_0_3"
 	 * represents an instance of the fourth session created at SvrID 1 on its
