@@ -67,7 +67,7 @@ public class RPCServer implements Runnable {
 						RPCStream.DataRead read = RPCStream.extractRead(data);
 						session = ssm.getSession(read.sessionID, read.sessionVersion);
 //						String returnServerID = RPCConfig.getServerID(returnAddr.toString());
-						String returnServerID = "127.0.0.1";
+//						String returnServerID = "127.0.0.1";
 						
 						// session found and valid
 						if (session != null && session.getVersionNumber() == read.sessionVersion && 

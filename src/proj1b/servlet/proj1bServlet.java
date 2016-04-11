@@ -1,18 +1,15 @@
 package proj1b.servlet;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import javax.servlet.RequestDispatcher;
@@ -23,184 +20,223 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import proj1b.rpc.RPCClient;
+import org.json.JSONObject;
+
+import proj1b.rpc.*;
 import proj1b.ssm.*;
 import proj1b.util.*;
 
 /**
  * Servlet implementation class proj1bServlet
  */
-@WebServlet("/proj1bServlet")
+// @WebServlet("/proj1bServlet")
 public class proj1bServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static Integer localServerID = 1; //TODO mapping
-	private static Integer rebootNum; 	// TODO read reboot_num from file system
 	private static Integer nextSessionID = 0;
-//	private static SessionManager ssm = SessionManager.getInstance();
-	private static Map<Integer, String> instances = new ConcurrentHashMap<Integer, String>();
-	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 	private static RPCClient client = new RPCClient();
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public proj1bServlet() {
-        super();
-        buildInstancesMap();
-        getRebootNum();
-        LOGGER.info("Servlet instantialized");
-    }
+
+	private static final Logger LOGGER = Logger.getLogger("Servlet Logger");
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#HttpServlet()
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
-		
-		//initialized variables
+	public proj1bServlet() {
+		super();
+		Utils.init();
+		LOGGER.info("Servlet instantialized");
+	}
+
+	public proj1bServlet(RPCClient rpcClient) {
+		super();
+		client = rpcClient;
+		Utils.init();
+		LOGGER.info("Servlet instantialized");
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+//		response.setContentType("text/html");
+//		response.setContentType("application/json");
+//		response.setCharacterEncoding("utf-8");
+
+		// initialized variables
 		Session session = null;
-		Cookie cookie = null;
 		Boolean logout = false;
-		
-		//iterate over cookies and find the related one
 		String sessionID = null;
 		int versionNumber = 0;
-		List<String> bricks = null;
-		List<String> IPs = null;
-		
+		List<String> svrIDs = null;
+		String sourceServerID = null;
+
+		// iterate over cookies and find the related one
 		Cookie[] cookies = request.getCookies();
-		if (cookies != null){
-			for (Cookie co : cookies){
-				if (co.getName().equals(Constants.COOKIE_NAME)){
+		if (cookies != null) {
+			for (Cookie co : cookies) {
+				if (co.getName().equals(Constants.COOKIE_NAME)) {
 					String[] cookieValues = co.getValue().split("\\" + Constants.SESSION_DELIMITER);
-					sessionID = cookieValues[0];
-					versionNumber = Integer.parseInt(cookieValues[1]);
-					bricks = Arrays.asList(cookieValues).subList(2, cookieValues.length);
+
+					sessionID = String.join(Constants.SESSION_DELIMITER, cookieValues[0], cookieValues[1],
+							cookieValues[2]);
+					versionNumber = Integer.parseInt(cookieValues[3]);
+					svrIDs = Arrays.asList(cookieValues).subList(4, cookieValues.length);
 					LOGGER.info("Found a cookie named CS5300PROJ1SESSION");
+					System.out.println("Cookie value : " + Arrays.asList(cookieValues));
 				}
 			}
 		}
-		
+
 		// create a new session if an arriving client request doesn't have a related cookie
-		if (sessionID == null){
-			session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
-			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session");
-		}else{
-			// convert server ID to server IP
-			IPs = new ArrayList<String>(bricks.size());
-			for (int i = 0; i < bricks.size(); i++){
-				IPs.add(instances.get(bricks.get(i)));
+		if (sessionID == null) {
+			session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
+			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session "
+					+ session.getCookieValue(new ArrayList<String>()));
+		} else {
+			// send read request to retrieve session state from R out of WQ
+			Set<Integer> randomNumbers = generateRandomNumbers(Constants.R, Constants.WQ);
+			List<String> svrIDs_R = new ArrayList<String>(Constants.R);
+			for (int n : randomNumbers)
+				svrIDs_R.add(svrIDs.get(n));
+
+			SessionInServer sessionInServer = client.sessionRead(sessionID, versionNumber, svrIDs_R);
+
+			if (sessionInServer == null) {
+				session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
+			} else {
+				session = sessionInServer.getSession();
+				sourceServerID = sessionInServer.getServerID();
 			}
-			
-			// send read request to retrieve session state from WQ servers
-			// TODO sessionRead call will return null if all servers are timed out. Thus, even though
-			session = client.sessionRead(sessionID, versionNumber, IPs);
-			if (session == null || session.getExpirationTime() < System.currentTimeMillis()){
+
+			if (session == null || session.getExpirationTime() < System.currentTimeMillis()) {
 				// removed session or invalid session (timed out)
-				session = new Session(localServerID, rebootNum, nextSessionID++, new ArrayList<String>());
-			}
-			LOGGER.info("Retrieved session from peers or created a new session for removed/invalid session");
-				
-			// replace or refresh
-			if (request.getParameter("Refresh") != null){
-				session.refresh();
-			}else if (request.getParameter("Replace") != null){
-				String message = request.getParameter("Message");
-				session.replace(message);
-			}else if (request.getParameter("Logout") != null){
-				logout = true;
-				session.logout();
+				session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
+				LOGGER.info("Retrieved session from peers or created a new session for removed/invalid session");
 			}
 		}
-		
-		//update to at least WQ bricks
-		//get target W bricks
-		IPs = new ArrayList<String>(Constants.W);
-		Iterator<String> iter = instances.values().iterator();
-		for(int count = 0; count <= Constants.W; count++){
-			if(iter.hasNext()){
-				IPs.add(iter.next());
-			}else{
+
+		// replace or refresh
+		if (request.getParameter("Refresh") != null) {
+			session.refresh();
+		} else if (request.getParameter("Replace") != null) {
+			String message = request.getParameter("Message");
+			session.replace(message);
+		} else if (request.getParameter("Logout") != null) {
+			logout = true;
+			session.logout();
+		}
+
+		// update to at least WQ bricks to get target W bricks
+		List<String> svrIDs_W = new ArrayList<String>(Constants.W);
+		Iterator<String> iter = Utils.getSvrIDs().iterator();
+		while (svrIDs_W.size() < Constants.W) {
+			if (iter.hasNext())
+				svrIDs_W.add(iter.next());
+			else
 				LOGGER.info("Less than W number of bricks for writing request.");
-			}
 		}
-		// send write request
-		List<String> locations = client.sessionWrite(session, IPs);
-		if (locations == null){
-			session.addLocation(instances.get(localServerID));
-			LOGGER.info("Running with only one server instance.");
-		}else{
-			session.resetLocation(locations);
-			LOGGER.info("Updated session location data");
+		System.out.println("Servers for write request: " + svrIDs_W.toString());
+
+		List<String> locations = client.sessionWrite(session, svrIDs_W);
+
+		if (locations == null) {
+			LOGGER.info("RPC Client returns Null from sessionWrite()");	
+			RequestDispatcher dispatcher = request.getRequestDispatcher("error.jsp");
+			dispatcher.forward(request, response);
+			return;
 		}
-		
+
 		// update cookie
-		cookie = new Cookie(Constants.COOKIE_NAME, session.getCookieValue());
-		cookie.setMaxAge((int)Constants.MAX_AGE);
-		response.addCookie(cookie);
+		Cookie cookie = new Cookie(Constants.COOKIE_NAME, session.getCookieValue(locations));
+		if (logout)
+			cookie.setMaxAge(0);
+		else
+			cookie.setMaxAge(Constants.MAX_AGE);
+
 		// TODO set cookie domain, see instruction P7
 		
-		// set output information
-		String info = logout ? "You have logged out. So long!" : session.getMessage(); 
-		String cookieValue = logout? "Logged out. No cookie value." : cookie.getValue();
-		String expTime = logout? "Logged out. No expiration time." : new Date(session.getExpirationTime()).toString();
-		int version = logout? 0 : session.getVersionNumber();
-		String outSessionID = logout? "Logged out. No session." : session.getSessionID();
-		Date date = new Date(System.currentTimeMillis());
-
-		request.setAttribute("sessionID", outSessionID);
-		request.setAttribute("currentDate", date.toString());
-		request.setAttribute("info", info);
-		request.setAttribute("cookieID", cookieValue);
-		request.setAttribute("expTime", expTime);
-		request.setAttribute("sessionVersion", version);
+		response.setContentType("application/json");
+		response.setCharacterEncoding("utf-8");
+		response.addCookie(cookie);
+		PrintWriter out = response.getWriter();
 		
+		JSONObject json = new JSONObject();
+		
+		json.put("serverID", Utils.getLocalServerID());
+		json.put("rebootNum", Utils.getRebootNum());
+		json.put("sourceServerID", sourceServerID);
+		
+		String outSessionID = logout ? "Logged out. No session." : session.getSessionID();
+		json.put("sessionID", outSessionID);
+		
+		int version = logout ? 0 : session.getVersionNumber();
+		json.put("sessionVersion", version);
+		
+		Date date = new Date(System.currentTimeMillis());
+		json.put("currentDate", date.toString());
+		
+		String info = session.getMessage();
+		json.put("info", info);
+		
+		String cookieValue = logout ? "Logged out. No cookie value." : cookie.getValue();
+		json.put("cookieID", cookieValue);
+		
+		String expTime = logout ? "Logged out. No expiration time." : new Date(session.getExpirationTime()).toString();
+		json.put("expTime", expTime);
+		
+		json.put("cookieMetadata", locations);
+		
+		out.print(json.toString());
+
+//		// set output information
+//		request.setAttribute("serverID", Utils.getLocalServerID());
+//		request.setAttribute("rebootNum", Utils.getRebootNum());
+//		request.setAttribute("sourceServerID", sourceServerID);
+
+		
+//		request.setAttribute("sessionID", outSessionID);
+//
+//		request.setAttribute("sessionVersion", version);
+//		
+//		request.setAttribute("currentDate", date.toString());
+
+//		request.setAttribute("info", info);
+
+//		request.setAttribute("cookieID", cookieValue);
+
+//		request.setAttribute("expTime", expTime);
+
+//		request.setAttribute("cookieMetadata", locations);
+		// request.setAttribute("cookieDomain", cookie.getDomain()); // TODO
+		// wait for instructions on cookie domain
+
 		// request forwarding
-		RequestDispatcher dispatcher = request.getRequestDispatcher("content.jsp");
-		dispatcher.forward(request, response);
+//		RequestDispatcher dispatcher = request.getRequestDispatcher("content.jsp");
+//		dispatcher.forward(request, response);
 	}
 
 	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
-	}	
-	
-	private void buildInstancesMap(){
-		FileInputStream baseFile;
-		BufferedReader reader;
-		try{
-			baseFile = new FileInputStream(Constants.InstancesDir);
-			reader = new BufferedReader(new InputStreamReader(baseFile));
-			LOGGER.info("Opened instances.txt and ready to read info");
-			String line = reader.readLine();
-			while (line != null){
-				String[] pairs = line.split("\\s+");
-				instances.put(Integer.parseInt(pairs[1]), pairs[0]);
-				line = reader.readLine();
-			}
-			reader.close();
-		}catch (FileNotFoundException e){
-			e.printStackTrace();
-		}catch (IOException e){
-			e.printStackTrace();
-		}
 	}
-	
-	private void getRebootNum(){
-		FileInputStream baseFile;
-		BufferedReader reader;
-		try{
-			baseFile = new FileInputStream(Constants.rebootDir);
-			reader = new BufferedReader(new InputStreamReader(baseFile));
-			LOGGER.info("Opened rebootNum.txt and ready to read info");
-			rebootNum = Integer.parseInt(reader.readLine());
-			reader.close();
-		}catch (FileNotFoundException e){
-			e.printStackTrace();
-		}catch (IOException e){
-			e.printStackTrace();
-		}
+
+	/**
+	 * Generate a set of m distinct numbers out of n numbers
+	 * 
+	 * @param m
+	 *            The number of numbers to be generated
+	 * @param n
+	 *            The total number of numbers
+	 * @return A set of random generated integers
+	 */
+	private Set<Integer> generateRandomNumbers(int m, int n) {
+		Random random = new Random();
+		Set<Integer> generated = new HashSet<Integer>();
+		while (generated.size() < m)
+			generated.add(random.nextInt(n));
+		return generated;
 	}
 }
