@@ -41,7 +41,7 @@ public class Utils {
 			reader.close();
 			
 			// Retrieve the local server ID
-			baseFile = new FileInputStream(Constants.localIPDir);
+			baseFile = new FileInputStream(Constants.localIDDir);
 			reader = new BufferedReader(new InputStreamReader(baseFile));
 			LOGGER.info("Opened local-ipv4 and ready to read info");
 			localServerID = reader.readLine();

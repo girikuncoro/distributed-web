@@ -13,7 +13,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
 import com.amazonaws.services.ec2.model.Instance;
 
