@@ -141,7 +141,7 @@ public class proj1bServlet extends HttpServlet {
 
 		if (locations == null) {
 			LOGGER.info("RPC Client returns Null from sessionWrite()");	
-			RequestDispatcher dispatcher = request.getRequestDispatcher("ErrorPage.jsp");
+			RequestDispatcher dispatcher = request.getRequestDispatcher("error.jsp");
 			dispatcher.forward(request, response);
 			return;
 		}

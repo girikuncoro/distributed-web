@@ -1,6 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <title>CS 5300 Project 1b</title>
@@ -10,14 +8,7 @@
 </head>
 <body>
 
-<!-- <p>netID: yf263, gk256, sz428
-	<br> Currently, Server ID ${serverID} with reboot number ${rebootNum} is executing the client request.
-	<br> The session data was found on server ID ${sourceServerID}
-	<br> Session: ${sessionID}
-	<br> Version: ${sessionVersion}
-	<br> Date: ${currentDate}</p>
-
-<h1>${info}</h1> -->
+<!-- For a request in an existing session, report the SvrID where the session data was found. -->
 
 <p>netID: yf263, gk256, sz428
 	<br> Currently, Server ID <span id="server-id"></span> with reboot number <span id="reboot-num"></span> is executing the client request.
@@ -28,25 +19,13 @@
 
 <h1 id="info"></h1>
 
-<!-- For a request in an existing session, report the SvrID where the session data was found. -->
 
 <div class="alert alert-danger alert-dismissible" id="msg-error" role="alert">
 	<button type="button" class="close" aria-label="Close">
 	<span aria-hidden="true">&times;</span></button>
-	<strong>Oops!</strong> Message can't be empty and contains '#' or '_'
+	<strong>Oops!</strong> Message can't be empty and can't contain '#' or '_' or whitespace
 </div>
-<!-- <form method="get" onsubmit="return validate(this);">
-	<div>
-		<input type="submit" name="Replace" value="Replace">
-		<input type="text" name="Message" maxlength="512" value="">
-	</div>
-	<div>
-		<input type="submit" name="Refresh" value="Refresh">
-	</div>
-	<div>
-		<input type="submit" name="Logout" value="Logout">
-	</div>
-</form> -->
+
 <div>
 	<div>
 		<input id="replace" class="btn btn-lg btn-primary request" name="Replace" value="Replace" type="button"/>
@@ -60,13 +39,6 @@
 	</div>
 </div>
 
-<!-- <div>
-	<p>Cookie: ${cookieID}
-	<br>Cookie meta data: ${cookieMetadata}
-	<br>Cookie domain: ${cookieDomain}
-	<br>ExpirationTime: ${expTime}</p>
-</div> -->
-
 <div>
 	<p>Cookie: <span id="cookie-id"></span>
 	<br>Cookie meta data: <span id="cookie-metadata"></span>
@@ -75,18 +47,16 @@
 </div>
 
 <script>
-	$('.alert .close').on('click', function(e) {
-		$(this).parent().hide();
-	})
-
-	var servletCall = function(params) {
+	// get request and populate the info upon successful request
+	function servletCall(params) {
 		$.ajax({
-			url: "proj1bServlet",
+			url: "/proj1b/proj1bServlet",
 			type: "GET",
 			datatype: "text",
 			data: params,
 			success: function(data) {
 				console.log(data);
+
 				$("#server-id").text(data.serverID);
 				$("#reboot-num").text(data.rebootNum);
 				$("#source-server-id").text(data.sourceServerID);
@@ -100,24 +70,26 @@
 				$("#cookie-metadata").text(data.cookieMetadata);
 				$("#cookie-domain").text(data.cookieDomain);
 				$("#exp-time").text(data.expTime);
-
+				
 			}
 		});
 	}
 
+	// init get request to servlet
 	$(document).ready(function() {
 		$("#msg-error").hide();
 		servletCall({ Init: "Init" });
 	});
 
+	// send get request for replace action, validate message before send
 	$("#replace").click(function() {
 		var msg = $("#message").val();
-		if (msg == "") {
+		if (msg == "" || $.trim(msg) == "") {
 			$("#msg-error").show();
 			return;
 		}
 
-		var invalidChars = ["_", "#"];
+		var invalidChars = ["_", "#", " "];
 		invalidChars.forEach(function(c) {
 			if (msg.indexOf(c) != -1) {
 				$("#msg-error").show();
@@ -128,9 +100,20 @@
 		servletCall({ Replace: "Replace", Message: msg });
 	});
 
+	// send get request for refresh action
+	$("#refresh").click(function() {
+		servletCall({ Refresh: "Refresh" });
+	});
+
+	// send get request for logout action
 	$("#logout").click(function() {
 		servletCall({ Logout: "Logout"});
 		window.location.href = "logout.jsp";
+	});
+
+	// close the alert box
+	$('.alert .close').on('click', function(e) {
+		$(this).parent().hide();
 	});
 
 </script>

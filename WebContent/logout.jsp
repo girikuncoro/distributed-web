@@ -10,7 +10,7 @@
 
 <div class="container">
 	<h1>You are logged out!</h1>
-	<p>Click <a href="/proj1bServlet">here</a> to login again</p>
+	<p>Click <a href="/proj1b">here</a> to login again</p>
 </div>
 
 </body>
