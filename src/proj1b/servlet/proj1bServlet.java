@@ -58,10 +58,6 @@ public class proj1bServlet extends HttpServlet {
 	 *      response)
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//		response.setContentType("text/html");
-//		response.setContentType("application/json");
-//		response.setCharacterEncoding("utf-8");
-
 		// initialized variables
 		Session session = null;
 		Boolean logout = false;
