@@ -3,7 +3,9 @@ package proj1b.ssm;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
+/**
+ * A background thread for garbage collecting expired sessions
+ */
 public class SessionCleaner implements Runnable {
 	@Override
 	public void run() {
