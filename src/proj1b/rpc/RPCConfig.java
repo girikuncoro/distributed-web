@@ -1,5 +1,8 @@
 package proj1b.rpc;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.amazonaws.services.ec2.model.Instance;
 
 public class RPCConfig {
@@ -17,10 +20,20 @@ public class RPCConfig {
 	
 	static final int SOCKET_TIMEOUT = 1000;
 
-	static int callID = 0;
+	static Map<String, Integer> callIDMap = new HashMap<String, Integer>();
 	
-	static boolean isValidID(int receivedCallID) {
-		return callID == receivedCallID;
+	static boolean isValidID(String receivedSvrID, int receivedCallID) {
+		if(!callIDMap.containsKey(receivedCallID)) {
+			callIDMap.put(receivedSvrID, receivedCallID);
+			return true;
+		}
+		
+		if(callIDMap.get(receivedSvrID) > receivedCallID) return false;
+		
+		callIDMap.put(receivedSvrID, receivedCallID);
+		return true;
+		
+//		return callID == receivedCallID;
 	}
 	
 	static String getServerID(String ipAddress) {

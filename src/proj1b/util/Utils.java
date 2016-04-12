@@ -67,6 +67,12 @@ public class Utils {
 		return null;
 	}
 	
+	public static String getSvrIDfromIP(String svrIP) {
+		if(instancesIPtoID.containsKey(svrIP)) return instancesIPtoID.get(svrIP);
+		LOGGER.warning("No svrIP: " + svrIP);
+		return null;
+	}
+	
 	public static Set<String> getSvrIDs() {
 		return instancesIDtoIP.keySet();
 	}
