@@ -95,11 +95,16 @@ public class proj1bServlet extends HttpServlet {
 			for (int n : randomNumbers)
 				svrIDs_R.add(svrIDs.get(n));
 
+			LOGGER.info("Before session read, sessionID: " + sessionID);
+			LOGGER.info("Before session read, versionNumber: " + String.valueOf(versionNumber));
+			LOGGER.info("Before session read, svrIDs_R: " + svrIDs_R.toString());
 			SessionInServer sessionInServer = client.sessionRead(sessionID, versionNumber, svrIDs_R);
 
 			if (sessionInServer == null) {
+				LOGGER.info("Session read returns null.");
 				session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
 			} else {
+				LOGGER.info("Session read returns not null.");
 				session = sessionInServer.getSession();
 				sourceServerID = sessionInServer.getServerID();
 			}
