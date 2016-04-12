@@ -30,10 +30,10 @@ public class Constants {
 //	public static final String localIDDir = System.getProperty("user.home") + "/ami-launch-index";
 //	public static final String localIPDir = System.getProperty("user.home") + "/local-ipv4";
 	
-	public static final String InstancesDir = "/home/ec2-user/instances.txt";
-	public static final String rebootDir = "/home/ec2-user/rebootNum.txt";
-	public static final String localIDDir = "/home/ec2-user/ami-launch-index";
-	public static final String localIPDir = "/home/ec2-user/local-ipv4";
+	public static final String InstancesDir = "/var/tmp/instances.txt";
+	public static final String rebootDir = "/var/tmp/rebootNum.txt";
+	public static final String localIDDir = "/var/tmp/ami-launch-index";
+	public static final String localIPDir = "/var/tmp/local-ipv4";
 	/*
 	 * Cookie
 	 */

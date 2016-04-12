@@ -45,7 +45,6 @@ public class Utils {
 			reader = new BufferedReader(new InputStreamReader(baseFile));
 			LOGGER.info("Opened local-ipv4 and ready to read info");
 			localServerID = reader.readLine();
-//			localServerID = instancesIPtoID.get(ip);
 			reader.close();
 		}catch (FileNotFoundException e){
 			e.printStackTrace();
