@@ -3,4 +3,5 @@
 !/WebContent
 !README.md
 !*.sh
+!*.war
 .DS_STORE
