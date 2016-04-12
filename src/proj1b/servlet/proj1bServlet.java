@@ -187,32 +187,6 @@ public class proj1bServlet extends HttpServlet {
 		json.put("cookieMetadata", locations);
 		
 		out.print(json.toString());
-
-//		// set output information
-//		request.setAttribute("serverID", Utils.getLocalServerID());
-//		request.setAttribute("rebootNum", Utils.getRebootNum());
-//		request.setAttribute("sourceServerID", sourceServerID);
-
-		
-//		request.setAttribute("sessionID", outSessionID);
-//
-//		request.setAttribute("sessionVersion", version);
-//		
-//		request.setAttribute("currentDate", date.toString());
-
-//		request.setAttribute("info", info);
-
-//		request.setAttribute("cookieID", cookieValue);
-
-//		request.setAttribute("expTime", expTime);
-
-//		request.setAttribute("cookieMetadata", locations);
-		// request.setAttribute("cookieDomain", cookie.getDomain()); // TODO
-		// wait for instructions on cookie domain
-
-		// request forwarding
-//		RequestDispatcher dispatcher = request.getRequestDispatcher("content.jsp");
-//		dispatcher.forward(request, response);
 	}
 
 	/**

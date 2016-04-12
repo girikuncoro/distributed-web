@@ -18,7 +18,7 @@ public class Constants {
 //	public static int WQ = F + 1; // number of data bricks that should contain a session
 //	public static int W = 2 * F + 1; // number of data bricks to send write requests
 	
-	public static final int N = 2; // number of total servers
+	public static final int N = 3; // number of total servers
 	public static final int F = 1; // F-resilient website
 	public static final int R = F + 1; // number of data bricks to send read requests
 	public static final int WQ = F + 1; // number of data bricks that should contain a session
