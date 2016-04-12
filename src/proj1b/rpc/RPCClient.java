@@ -13,7 +13,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
 import com.amazonaws.services.ec2.model.Instance;
 
@@ -49,7 +48,7 @@ public class RPCClient {
 				socket = new DatagramSocket();
 				socket.setSoTimeout(RPCConfig.SOCKET_TIMEOUT);
 				byte[] sendBytes = RPCStream
-						.marshall(String.join(RPCConfig.RPC_DELIMITER, String.valueOf(RPCConfig.callID),
+						.marshall(String.join(RPCConfig.RPC_DELIMITER, String.valueOf(RPCConfig.getLocalCallID()),
 								String.valueOf(RPCConfig.READ_CODE), sessionID, String.valueOf(versionNumber)));
 				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrIP),
 						RPCConfig.SERVER_PORT);
@@ -73,7 +72,8 @@ public class RPCClient {
 						System.out.println("Getting host address: " + receivedServerIP);
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (receivedServerIP.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+					} while (receivedServerIP.compareTo(svrIP) != 0
+							|| !RPCConfig.isValidID(svrID, Integer.parseInt(recvInfo[0]))
 							|| Integer.parseInt(recvInfo[1]) != RPCConfig.RPC_RESPONSE_OK);
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrID);
@@ -81,7 +81,8 @@ public class RPCClient {
 					continue;
 				}
 
-				RPCConfig.callID++;
+				// RPCConfig.callID++;
+				RPCConfig.incrementLocalCallID();
 				return new SessionInServer(Session.decode(recvInfo[2]), svrID);
 			} catch (IOException e) {
 				System.out.println("IOException in communicating with server ID: " + svrID);
@@ -91,7 +92,9 @@ public class RPCClient {
 			}
 		}
 
-		RPCConfig.callID++;
+		LOGGER.info("Cannot read session info from servers.");
+		// RPCConfig.callID++;
+		RPCConfig.incrementLocalCallID();
 		return null;
 	}
 
@@ -117,8 +120,9 @@ public class RPCClient {
 				socket = new DatagramSocket();
 				socket.setSoTimeout(RPCConfig.SOCKET_TIMEOUT);
 
-				byte[] sendBytes = RPCStream.marshall(String.join(RPCConfig.RPC_DELIMITER,
-						String.valueOf(RPCConfig.callID), String.valueOf(RPCConfig.WRITE_CODE), session.encode()));
+				byte[] sendBytes = RPCStream
+						.marshall(String.join(RPCConfig.RPC_DELIMITER, String.valueOf(RPCConfig.getLocalCallID()),
+								String.valueOf(RPCConfig.WRITE_CODE), session.encode()));
 				DatagramPacket sendPkt = new DatagramPacket(sendBytes, sendBytes.length, InetAddress.getByName(svrIP),
 						RPCConfig.SERVER_PORT);
 
@@ -133,8 +137,9 @@ public class RPCClient {
 				String receivedServerIP = null;
 				try {
 					do {
-						if(backupList.size() == Constants.WQ) break;
-						
+						if (backupList.size() == Constants.WQ)
+							break;
+
 						recvPkt.setLength(inBuf.length);
 						LOGGER.info("Ready to receive reply.");
 						socket.receive(recvPkt);
@@ -144,7 +149,8 @@ public class RPCClient {
 						System.out.println("Server IP in session write " + receivedServerIP);
 						recvInfo = RPCStream.unmarshall(recvPkt.getData()).split(RPCConfig.RPC_DELIMITER);
 						LOGGER.info("Server response: " + RPCStream.unmarshall(recvPkt.getData()));
-					} while (receivedServerIP.compareTo(svrIP) != 0 || !RPCConfig.isValidID(Integer.parseInt(recvInfo[0]))
+					} while (receivedServerIP.compareTo(svrIP) != 0
+							|| !RPCConfig.isValidID(svrID, Integer.parseInt(recvInfo[0]))
 							|| addToList(backupList, svrID) < Constants.WQ);
 				} catch (SocketTimeoutException e) {
 					System.out.println("Socket Timeout: " + svrIP);
@@ -159,9 +165,11 @@ public class RPCClient {
 			}
 		}
 
-		RPCConfig.callID++;
+		// RPCConfig.callID++;
+		RPCConfig.incrementLocalCallID();
 		System.out.println("!!!!!!!!BackupList is: " + backupList.toString());
-		if(backupList.size() == Constants.WQ) return backupList;
+		if (backupList.size() == Constants.WQ)
+			return backupList;
 		else {
 			LOGGER.info("Not enough backup.");
 			return null;

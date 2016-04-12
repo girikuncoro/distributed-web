@@ -1,7 +1,13 @@
 #!/bin/bash
 
+# AWS credentials to connect with aws cli
+# It's actually dangerous to store credentials in Github
+# TODO: generate new keys and think of another way to store
+AWS_KEY="AKIAI4FQXGCVF2BFTXYQ"
+AWS_SECRET="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"
+
 # deployable war file
-WAR_FILE="hello.war"
+WAR_FILE="proj1b.war"
 
 # S3 bucket name to bring war file and other stuffs in
 S3_BUCKET="edu-cornell-cs-cs5300s16-gk256"
@@ -10,42 +16,33 @@ S3_BUCKET="edu-cornell-cs-cs5300s16-gk256"
 DB_DOMAIN="LSI"
 
 # number of instances to launch
-N_INSTANCE=1
+N_INSTANCE=3
 
 # file path to store tmp files and instance file
-HOME_PATH="/home/ec2-user/"
+HOME_PATH="/var/tmp/"
+
+# java version to install
+JAVA_VER=jdk-8u60-linux-x64.rpm
+JAVA_URL="http://download.oracle.com/otn-pub/java/jdk/8u60-b27/$JAVA_VER"
 
 # file name to store ipAddress-svrID pairs in file system
 INSTANCE_FILE=instances.txt
 
-# AWS credentials to connect with aws cli
-# It's actually dangerous to store credentials in Github
-# TODO: generate new keys and think of another way to store
-AWS_KEY="AKIAI4FQXGCVF2BFTXYQ"
-AWS_SECRET="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"
+# file name to reboot instance
+REBOOT_FILE=reboot.sh
+
+# file name for rebootNum
+REBOOT_NUM=rebootNum.txt
 
 # print each cmd executed
 set -ex
 
-##### IGNORE BELOW, Tomcat8 supports > Java7
-# install java8 to be compatible with tomcat8
-# assume java7 is preconfigured in EC2
-# JAVA_VER=$(java -version 2>&1 | sed 's/.*version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q')
-# if [[ "$JAVA_VER" -eq "18" ]]
-# then
-#     echo "Java8 is already pre-installed"
-# elif [[ "$JAVA_VER" -eq "17" ]]
-# then
-#     echo "Installing Java8 then removing Java7"
-#     sudo yum -y install java-1.8.0
-#     sudo yum -y remove java-1.7.0-openjdk
-# else
-#     echo "Installing Java8"
-#     sudo yum -y install java-1.8.0
-# fi
+# install java8 to be compatible with tomcat8 and webapp
+wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" $JAVA_URL -P $HOME_PATH
+yum -y localinstall "$HOME_PATH$JAVA_VER"
 
 # install tomcat8
-sudo yum -y install tomcat8-webapps tomcat8-docs-webapp tomcat8-admin-webapps
+yum -y install tomcat8-webapps tomcat8-docs-webapp tomcat8-admin-webapps
 
 # aws config credentials, enable simpleDB
 aws configure set aws_access_key_id $AWS_KEY
@@ -55,9 +52,14 @@ aws configure set preview.sdb true
 
 # install app code
 S3_URL="$S3_BUCKET/$WAR_FILE"
-sudo aws s3 cp s3://$S3_URL $HOME_PATH
+aws s3 cp s3://$S3_URL $HOME_PATH
 WAR_URL="$HOME_PATH$WAR_FILE"
-sudo cp $WAR_URL /usr/share/tomcat8/webapps
+cp $WAR_URL /usr/share/tomcat8/webapps
+
+# get reboot script
+S3REBOOT_URL="$S3_BUCKET/$REBOOT_FILE"
+aws s3 cp s3://$S3REBOOT_URL $HOME_PATH
+chmod +x "$HOME_PATH$REBOOT_FILE"
 
 # determine internal IP of this instance, save it to file
 wget http://169.254.169.254/latest/meta-data/local-ipv4 -P $HOME_PATH
@@ -92,5 +94,12 @@ INSTANCE_FILE="$HOME_PATH$INSTANCE_FILE"
 aws sdb select --select-expression "SELECT * FROM $DB_DOMAIN" --output text | grep -v "ITEMS" > $INSTANCE_FILE
 sed -i 's/ATTRIBUTES//g; s/^[ \t]*//' $INSTANCE_FILE
 
+# init reboot number
+REBOOT_FILE="$HOME_PATH$REBOOT_NUM"
+echo 0 > $REBOOT_FILE
+
+# change permission to give access to the app
+chmod 777 $REBOOT_FILE $INSTANCE_FILE $AMI_IDX $IP_ADDR
+
 # start tomcat
-sudo service tomcat8 start
+service tomcat8 start

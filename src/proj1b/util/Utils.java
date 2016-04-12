@@ -41,11 +41,10 @@ public class Utils {
 			reader.close();
 			
 			// Retrieve the local server ID
-			baseFile = new FileInputStream(Constants.localIPDir);
+			baseFile = new FileInputStream(Constants.localIDDir);
 			reader = new BufferedReader(new InputStreamReader(baseFile));
 			LOGGER.info("Opened local-ipv4 and ready to read info");
 			localServerID = reader.readLine();
-//			localServerID = instancesIPtoID.get(ip);
 			reader.close();
 		}catch (FileNotFoundException e){
 			e.printStackTrace();
@@ -65,6 +64,12 @@ public class Utils {
 	public static String getSvrIPfromID(String svrID) {
 		if(instancesIDtoIP.containsKey(svrID)) return instancesIDtoIP.get(svrID);
 		LOGGER.warning("No svrID: " + svrID);
+		return null;
+	}
+	
+	public static String getSvrIDfromIP(String svrIP) {
+		if(instancesIPtoID.containsKey(svrIP)) return instancesIPtoID.get(svrIP);
+		LOGGER.warning("No svrIP: " + svrIP);
 		return null;
 	}
 	

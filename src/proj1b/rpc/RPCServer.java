@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import proj1b.ssm.Session;
 import proj1b.ssm.SessionManager;
+import proj1b.util.Utils;
 
 public class RPCServer implements Runnable {
 	DatagramSocket rpcSocket;
@@ -66,15 +67,13 @@ public class RPCServer implements Runnable {
 					case RPCConfig.READ_CODE:  
 						RPCStream.DataRead read = RPCStream.extractRead(data);
 						session = ssm.getSession(read.sessionID, read.sessionVersion);
-//						String returnServerID = RPCConfig.getServerID(returnAddr.toString());
-//						String returnServerID = "127.0.0.1";
 						
 						// session found and valid
 						if (session != null && session.getVersionNumber() == read.sessionVersion && 
-								RPCConfig.isValidID(Integer.parseInt(request.callID))) {
+								RPCConfig.isValidID(Utils.getSvrIDfromIP(recvPacket.getAddress().getHostAddress()), Integer.parseInt(request.callID))) {
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK + RPCConfig.RPC_DELIMITER + session.encode();
 						} 
-						else if (!RPCConfig.isValidID(Integer.parseInt(request.callID))){
+						else if (!RPCConfig.isValidID(Utils.getSvrIDfromIP(recvPacket.getAddress().getHostAddress()), Integer.parseInt(request.callID))){
 							response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_INVALID_CALLID;
 						} 
 						else {
