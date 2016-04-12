@@ -148,6 +148,9 @@ public class proj1bServlet extends HttpServlet {
 			cookie.setMaxAge(0);
 		else
 			cookie.setMaxAge(Constants.MAX_AGE);
+		
+		// Set cookie domain
+		cookie.setDomain(".sz428.bigdata.systems");
 
 		// TODO set cookie domain, see instruction P7
 		
