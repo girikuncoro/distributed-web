@@ -13,7 +13,7 @@ DB_DOMAIN="LSI"
 N_INSTANCE=3
 
 # file path to store tmp files and instance file
-HOME_PATH="/home/ec2-user/"
+HOME_PATH="/var/tmp/"
 
 # java version to install
 JAVA_VER=jdk-8u60-linux-x64.rpm
@@ -21,6 +21,9 @@ JAVA_URL="http://download.oracle.com/otn-pub/java/jdk/8u60-b27/$JAVA_VER"
 
 # file name to store ipAddress-svrID pairs in file system
 INSTANCE_FILE=instances.txt
+
+# file name for rebootNum
+REBOOT_NUM=rebootNum.txt
 
 # AWS credentials to connect with aws cli
 # It's actually dangerous to store credentials in Github
@@ -33,10 +36,10 @@ set -ex
 
 # install java8 to be compatible with tomcat8 and webapp
 wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" $JAVA_URL -P $HOME_PATH
-sudo yum -y localinstall "$HOME_PATH$JAVA_VER"
+yum -y localinstall "$HOME_PATH$JAVA_VER"
 
 # install tomcat8
-sudo yum -y install tomcat8-webapps tomcat8-docs-webapp tomcat8-admin-webapps
+yum -y install tomcat8-webapps tomcat8-docs-webapp tomcat8-admin-webapps
 
 # aws config credentials, enable simpleDB
 aws configure set aws_access_key_id $AWS_KEY
@@ -46,9 +49,9 @@ aws configure set preview.sdb true
 
 # install app code
 S3_URL="$S3_BUCKET/$WAR_FILE"
-sudo aws s3 cp s3://$S3_URL $HOME_PATH
+aws s3 cp s3://$S3_URL $HOME_PATH
 WAR_URL="$HOME_PATH$WAR_FILE"
-sudo cp $WAR_URL /usr/share/tomcat8/webapps
+cp $WAR_URL /usr/share/tomcat8/webapps
 
 # determine internal IP of this instance, save it to file
 wget http://169.254.169.254/latest/meta-data/local-ipv4 -P $HOME_PATH
@@ -83,5 +86,12 @@ INSTANCE_FILE="$HOME_PATH$INSTANCE_FILE"
 aws sdb select --select-expression "SELECT * FROM $DB_DOMAIN" --output text | grep -v "ITEMS" > $INSTANCE_FILE
 sed -i 's/ATTRIBUTES//g; s/^[ \t]*//' $INSTANCE_FILE
 
+# init reboot number
+REBOOT_FILE="$HOME_PATH$REBOOT_NUM"
+echo 0 > $REBOOT_FILE
+
+# change permission to give access to the app
+chmod 777 $REBOOT_FILE $INSTANCE_FILE $AMI_IDX $IP_ADDR
+
 # start tomcat
-sudo service tomcat8 start
+service tomcat8 start
