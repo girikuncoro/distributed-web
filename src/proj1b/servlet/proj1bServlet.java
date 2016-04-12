@@ -43,6 +43,7 @@ public class proj1bServlet extends HttpServlet {
 	public proj1bServlet() {
 		super();
 		Utils.init();
+		Constants.init();
 		LOGGER.info("Servlet instantialized");
 	}
 
@@ -50,6 +51,7 @@ public class proj1bServlet extends HttpServlet {
 		super();
 		client = rpcClient;
 		Utils.init();
+		Constants.init();
 		LOGGER.info("Servlet instantialized");
 	}
 
@@ -156,8 +158,6 @@ public class proj1bServlet extends HttpServlet {
 		
 		// Set cookie domain
 		cookie.setDomain(".sz428.bigdata.systems");
-
-		// TODO set cookie domain, see instruction P7
 		
 		response.setContentType("application/json");
 		response.setCharacterEncoding("utf-8");

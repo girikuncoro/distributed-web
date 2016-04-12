@@ -23,7 +23,6 @@ public class RPCServer implements Runnable {
 			rpcSocket = new DatagramSocket(RPCConfig.SERVER_PORT);
 			LOGGER.info("Socket built.");
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
