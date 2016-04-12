@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# AWS credentials to connect with aws cli
+# It's actually dangerous to store credentials in Github
+# TODO: generate new keys and think of another way to store
+AWS_KEY="AKIAI4FQXGCVF2BFTXYQ"
+AWS_SECRET="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"
+
 # deployable war file
 WAR_FILE="proj1b.war"
 
@@ -22,14 +28,11 @@ JAVA_URL="http://download.oracle.com/otn-pub/java/jdk/8u60-b27/$JAVA_VER"
 # file name to store ipAddress-svrID pairs in file system
 INSTANCE_FILE=instances.txt
 
+# file name to reboot instance
+REBOOT_FILE=reboot.sh
+
 # file name for rebootNum
 REBOOT_NUM=rebootNum.txt
-
-# AWS credentials to connect with aws cli
-# It's actually dangerous to store credentials in Github
-# TODO: generate new keys and think of another way to store
-AWS_KEY="AKIAI4FQXGCVF2BFTXYQ"
-AWS_SECRET="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"
 
 # print each cmd executed
 set -ex
@@ -52,6 +55,11 @@ S3_URL="$S3_BUCKET/$WAR_FILE"
 aws s3 cp s3://$S3_URL $HOME_PATH
 WAR_URL="$HOME_PATH$WAR_FILE"
 cp $WAR_URL /usr/share/tomcat8/webapps
+
+# get reboot script
+S3REBOOT_URL="$S3_BUCKET/$REBOOT_FILE"
+aws s3 cp s3://$S3REBOOT_URL $HOME_PATH
+chmod +x "$HOME_PATH$REBOOT_FILE"
 
 # determine internal IP of this instance, save it to file
 wget http://169.254.169.254/latest/meta-data/local-ipv4 -P $HOME_PATH
