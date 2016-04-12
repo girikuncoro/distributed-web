@@ -5,6 +5,8 @@ import java.util.Map;
 
 import com.amazonaws.services.ec2.model.Instance;
 
+import proj1b.util.Utils;
+
 public class RPCConfig {
 	static final int SERVER_PORT = 5300;
 	static final int MAX_PACKET_LENGTH = 512;
@@ -32,8 +34,20 @@ public class RPCConfig {
 		
 		callIDMap.put(receivedSvrID, receivedCallID);
 		return true;
+	}
+	
+	static int getLocalCallID() {
+		String localServerID = Utils.getLocalServerID();
+		if(!callIDMap.containsKey(localServerID)) callIDMap.put(localServerID, 0);
+		return callIDMap.get(localServerID);
+	}
+	
+	static void incrementLocalCallID() {
+		String localServerID = Utils.getLocalServerID();
+		if(!callIDMap.containsKey(localServerID))
+			System.out.println("Error in increment local call ID. No such key.");
 		
-//		return callID == receivedCallID;
+		callIDMap.put(localServerID, callIDMap.get(localServerID)+1);
 	}
 	
 	static String getServerID(String ipAddress) {
