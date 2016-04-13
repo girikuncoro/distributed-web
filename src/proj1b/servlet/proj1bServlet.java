@@ -190,7 +190,9 @@ public class proj1bServlet extends HttpServlet {
 		
 		json.put("cookieMetadata", locations);
 		
-		json.put("cookieDomain", "" + request.getRequestURL().toString().split(":")[0]);
+		String[] urlString = request.getRequestURL().toString().split(":");
+		String cookieDomain = urlString.length < 2 ? "" : urlString[1].substring(2);
+		json.put("cookieDomain", cookieDomain);
 		
 		out.print(json.toString());
 	}
