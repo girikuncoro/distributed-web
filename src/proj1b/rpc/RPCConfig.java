@@ -19,37 +19,39 @@ public class RPCConfig {
 	static final int RPC_RESPONSE_INVALID_OPCODE = 300;
 	static final int RPC_RESPONSE_NOT_FOUND = 400;
 	static final int RPC_RESPONSE_INVALID_CALLID = 401;
-	
+
 	static final int SOCKET_TIMEOUT = 1000;
 
 	static Map<String, Integer> callIDMap = new HashMap<String, Integer>();
-	
+
 	static boolean isValidID(String receivedSvrID, int receivedCallID) {
-		if(!callIDMap.containsKey(receivedCallID)) {
+		if (!callIDMap.containsKey(receivedCallID)) {
 			callIDMap.put(receivedSvrID, receivedCallID);
 			return true;
 		}
-		
-		if(callIDMap.get(receivedSvrID) > receivedCallID) return false;
-		
+
+		if (callIDMap.get(receivedSvrID) > receivedCallID)
+			return false;
+
 		callIDMap.put(receivedSvrID, receivedCallID);
 		return true;
 	}
-	
+
 	static int getLocalCallID() {
 		String localServerID = Utils.getLocalServerID();
-		if(!callIDMap.containsKey(localServerID)) callIDMap.put(localServerID, 0);
+		if (!callIDMap.containsKey(localServerID))
+			callIDMap.put(localServerID, 0);
 		return callIDMap.get(localServerID);
 	}
-	
+
 	static void incrementLocalCallID() {
 		String localServerID = Utils.getLocalServerID();
-		if(!callIDMap.containsKey(localServerID))
+		if (!callIDMap.containsKey(localServerID))
 			System.out.println("Error in increment local call ID. No such key.");
-		
-		callIDMap.put(localServerID, callIDMap.get(localServerID)+1);
+
+		callIDMap.put(localServerID, callIDMap.get(localServerID) + 1);
 	}
-	
+
 	static String getServerID(String ipAddress) {
 		Instance instance = new Instance();
 		instance.withPublicIpAddress(ipAddress);

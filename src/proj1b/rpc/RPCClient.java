@@ -14,8 +14,6 @@ import java.net.InetAddress;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
-import com.amazonaws.services.ec2.model.Instance;
-
 public class RPCClient {
 	private static final Logger LOGGER = Logger.getLogger("RPC client logger");
 
@@ -81,7 +79,6 @@ public class RPCClient {
 					continue;
 				}
 
-				// RPCConfig.callID++;
 				RPCConfig.incrementLocalCallID();
 				return new SessionInServer(Session.decode(recvInfo[2]), svrID);
 			} catch (IOException e) {
@@ -93,7 +90,6 @@ public class RPCClient {
 		}
 
 		LOGGER.info("Cannot read session info from servers.");
-		// RPCConfig.callID++;
 		RPCConfig.incrementLocalCallID();
 		return null;
 	}
@@ -165,7 +161,6 @@ public class RPCClient {
 			}
 		}
 
-		// RPCConfig.callID++;
 		RPCConfig.incrementLocalCallID();
 		System.out.println("!!!!!!!!BackupList is: " + backupList.toString());
 		if (backupList.size() == Constants.WQ)

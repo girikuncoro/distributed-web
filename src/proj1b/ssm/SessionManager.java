@@ -14,12 +14,13 @@ import proj1b.util.*;
 public class SessionManager {
 	private static SessionManager instance = new SessionManager();
 	private static Map<String, Session> sessionDataTable = new ConcurrentHashMap<String, Session>();
-	
+
 	private static ScheduledExecutorService executor;
-	
+
 	private SessionManager() {
 		executor = Executors.newScheduledThreadPool(1);
-		executor.scheduleAtFixedRate(new SessionCleaner(), Constants.SESSION_CLEANER_INTERVAL, Constants.SESSION_CLEANER_INTERVAL, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(new SessionCleaner(), Constants.SESSION_CLEANER_INTERVAL,
+				Constants.SESSION_CLEANER_INTERVAL, TimeUnit.SECONDS);
 	}
 
 	public static SessionManager getInstance() {

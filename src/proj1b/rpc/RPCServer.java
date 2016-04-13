@@ -54,7 +54,6 @@ public class RPCServer implements Runnable {
 				String response = request.callID;
 				Session session;
 				
-				// TODO: Validate callID?
 				switch (request.operationCode) {
 					
 					// NoOp: expected response format: callID_responseCode
@@ -83,15 +82,8 @@ public class RPCServer implements Runnable {
 					// sessionWrite: expected response format: callID_responseCode_encodedSessionData
 					case RPCConfig.WRITE_CODE:  
 						// no need to check session exist, we need to keep all versions
-						// TODO: validate callID
-						// TODO: checking the old sessionID exist and keep if less than discardTime
-						// TODO: should we check currentTime > discardedTime?
-						// TODO: for heavy delayed call, what if existing session already cleaned up?
-						// TODO: sessionID + ipAdress must be handled in servlet to maintain globally unique sessionID
 						
 						RPCStream.DataWrite write = RPCStream.extractWrite(data);
-						String serverIpAddress = rpcSocket.getLocalAddress().toString();
-//						request.session.addLocation(RPCConfig.getServerID(serverIpAddress));
 						ssm.addSession(write.session);
 						response += RPCConfig.RPC_DELIMITER + RPCConfig.RPC_RESPONSE_OK;
 						break;

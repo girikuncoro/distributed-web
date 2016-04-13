@@ -12,7 +12,8 @@ public class Session {
 	private long expirationTime; // creation time + time out time
 	private static final Logger LOGGER = Logger.getLogger("Session Logger");
 
-	public Session(String svrID, Integer rebootNum, Integer sessID, Integer versionNumber, String message, long expirationTime) {
+	public Session(String svrID, Integer rebootNum, Integer sessID, Integer versionNumber, String message,
+			long expirationTime) {
 		sessionID = String.join(Constants.SESSION_DELIMITER, svrID, rebootNum.toString(), sessID.toString());
 		this.versionNumber = versionNumber;
 		this.message = message;
