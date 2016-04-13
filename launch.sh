@@ -2,13 +2,16 @@
 
 ###################### TA HAVE TO EDIT THIS ##################
 # number of instances to launch
-N=3
+N=5
 
 # resiliency to maintain
-F=1
+F=2
 
 # S3 bucket name to bring war file and other stuffs in
 S3_BUCKET="edu-cornell-cs-cs5300s16-gk256"
+
+# keypair to ssh instance, important for reboot process
+KEYPAIR=proj1bfinal
 ##############################################################
 
 # deployable war file
@@ -49,4 +52,4 @@ aws sdb put-attributes --domain-name $CONFIG_DOMAIN --item-name F \
 
 # launch N instances
 echo ">>>>>> Lunching N instances of EC2"
-aws ec2 run-instances --image-id $INSTANCE_TYPE --count $N --instance-type t2.micro --user-data file://$INSTALL_FILE --key-name proj1bfinal
+aws ec2 run-instances --image-id $INSTANCE_TYPE --count $N --instance-type t2.micro --user-data file://$INSTALL_FILE --key-name $KEYPAIR
