@@ -1,10 +1,18 @@
 #!/bin/bash
 
+###################### TA HAVE TO EDIT THIS ##################
 # number of instances to launch
 N=3
 
 # resiliency to maintain
 F=1
+
+# S3 bucket name to bring war file and other stuffs in
+S3_BUCKET="edu-cornell-cs-cs5300s16-gk256"
+##############################################################
+
+# deployable war file
+WAR_FILE="proj1b.war"
 
 # simpleDB domain name to hold ipAddress-svrID pairs
 IPID_DOMAIN="SERVERIDS"
@@ -18,6 +26,10 @@ INSTANCE_TYPE="ami-08111162"
 # enable simpleDB and us-east to work with configured image-id
 aws configure set default.region us-east-1
 aws configure set preview.sdb true
+
+# upload war file to simpleDB
+echo ">>>>>> Uploading war file to AWS S3"
+aws s3 cp $WAR_FILE s3://${S3_BUCKET}/$WAR_FILE
 
 # reset simpleDB
 echo ">>>>>> Cleaning IPID simpleDB domain"
@@ -37,4 +49,4 @@ aws sdb put-attributes --domain-name $CONFIG_DOMAIN --item-name F \
 
 # launch N instances
 echo ">>>>>> Lunching N instances of EC2"
-aws ec2 run-instances --image-id $INSTANCE_TYPE --count $N --instance-type t2.micro --user-data file://$INSTALL_FILE
+aws ec2 run-instances --image-id $INSTANCE_TYPE --count $N --instance-type t2.micro --user-data file://$INSTALL_FILE --key-name proj1bfinal
