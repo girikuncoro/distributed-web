@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +28,7 @@ import proj1b.util.*;
 /**
  * Servlet implementation class proj1bServlet
  */
-// @WebServlet("/proj1bServlet")
+
 public class proj1bServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static Integer nextSessionID = 0;
@@ -43,7 +42,6 @@ public class proj1bServlet extends HttpServlet {
 	public proj1bServlet() {
 		super();
 		Utils.init();
-		Constants.init();
 		LOGGER.info("Servlet instantialized");
 	}
 
@@ -51,7 +49,6 @@ public class proj1bServlet extends HttpServlet {
 		super();
 		client = rpcClient;
 		Utils.init();
-		Constants.init();
 		LOGGER.info("Servlet instantialized");
 	}
 
@@ -85,7 +82,8 @@ public class proj1bServlet extends HttpServlet {
 			}
 		}
 
-		// create a new session if an arriving client request doesn't have a related cookie
+		// create a new session if an arriving client request doesn't have a
+		// related cookie
 		if (sessionID == null) {
 			session = new Session(Utils.getLocalServerID(), Utils.getRebootNum(), nextSessionID++);
 			LOGGER.info("Couldn't find a cookie named CS5300PROJ1SESSION. Created a new session "
@@ -143,7 +141,7 @@ public class proj1bServlet extends HttpServlet {
 		List<String> locations = client.sessionWrite(session, svrIDs_W);
 
 		if (locations == null) {
-			LOGGER.info("RPC Client returns Null from sessionWrite()");	
+			LOGGER.info("RPC Client returns Null from sessionWrite()");
 			RequestDispatcher dispatcher = request.getRequestDispatcher("error.jsp");
 			dispatcher.forward(request, response);
 			return;
@@ -155,45 +153,45 @@ public class proj1bServlet extends HttpServlet {
 			cookie.setMaxAge(0);
 		else
 			cookie.setMaxAge(Constants.MAX_AGE);
-		
+
 		// Set cookie domain
 		cookie.setDomain(".sz428.bigdata.systems");
-		
+
 		response.setContentType("application/json");
 		response.setCharacterEncoding("utf-8");
 		response.addCookie(cookie);
 		PrintWriter out = response.getWriter();
-		
+
 		JSONObject json = new JSONObject();
-		
+
 		json.put("serverID", Utils.getLocalServerID());
 		json.put("rebootNum", Utils.getRebootNum());
 		json.put("sourceServerID", sourceServerID);
-		
+
 		String outSessionID = logout ? "Logged out. No session." : session.getSessionID();
 		json.put("sessionID", outSessionID);
-		
+
 		int version = logout ? 0 : session.getVersionNumber();
 		json.put("sessionVersion", version);
-		
+
 		Date date = new Date(System.currentTimeMillis());
 		json.put("currentDate", date.toString());
-		
+
 		String info = session.getMessage();
 		json.put("info", info);
-		
+
 		String cookieValue = logout ? "Logged out. No cookie value." : cookie.getValue();
 		json.put("cookieID", cookieValue);
-		
+
 		String expTime = logout ? "Logged out. No expiration time." : new Date(session.getExpirationTime()).toString();
 		json.put("expTime", expTime);
-		
+
 		json.put("cookieMetadata", locations);
-		
+
 		String[] urlString = request.getRequestURL().toString().split(":");
 		String cookieDomain = urlString.length < 2 ? "" : urlString[1].substring(2);
 		json.put("cookieDomain", cookieDomain);
-		
+
 		out.print(json.toString());
 	}
 
