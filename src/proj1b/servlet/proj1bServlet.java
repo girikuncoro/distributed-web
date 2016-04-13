@@ -142,7 +142,7 @@ public class proj1bServlet extends HttpServlet {
 
 		JSONObject json = new JSONObject();
 		PrintWriter out = response.getWriter();
-		
+
 		if (locations == null) {
 			LOGGER.info("RPC Client returns Null from sessionWrite()");
 			json.put("status", "error");
@@ -191,7 +191,7 @@ public class proj1bServlet extends HttpServlet {
 		String[] urlString = request.getRequestURL().toString().split(":");
 		String cookieDomain = urlString.length < 2 ? "" : urlString[1].substring(2);
 		json.put("cookieDomain", cookieDomain);
-		
+
 		json.put("status", "success");
 
 		out.print(json.toString());
