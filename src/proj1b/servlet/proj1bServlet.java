@@ -140,10 +140,13 @@ public class proj1bServlet extends HttpServlet {
 
 		List<String> locations = client.sessionWrite(session, svrIDs_W);
 
+		JSONObject json = new JSONObject();
+		PrintWriter out = response.getWriter();
+		
 		if (locations == null) {
 			LOGGER.info("RPC Client returns Null from sessionWrite()");
-			RequestDispatcher dispatcher = request.getRequestDispatcher("error.jsp");
-			dispatcher.forward(request, response);
+			json.put("status", "error");
+			out.print(json.toString());
 			return;
 		}
 
@@ -160,9 +163,6 @@ public class proj1bServlet extends HttpServlet {
 		response.setContentType("application/json");
 		response.setCharacterEncoding("utf-8");
 		response.addCookie(cookie);
-		PrintWriter out = response.getWriter();
-
-		JSONObject json = new JSONObject();
 
 		json.put("serverID", Utils.getLocalServerID());
 		json.put("rebootNum", Utils.getRebootNum());
@@ -191,6 +191,8 @@ public class proj1bServlet extends HttpServlet {
 		String[] urlString = request.getRequestURL().toString().split(":");
 		String cookieDomain = urlString.length < 2 ? "" : urlString[1].substring(2);
 		json.put("cookieDomain", cookieDomain);
+		
+		json.put("status", "success");
 
 		out.print(json.toString());
 	}
