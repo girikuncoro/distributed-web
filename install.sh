@@ -37,6 +37,9 @@ REBOOT_FILE=reboot.sh
 # file name for rebootNum
 REBOOT_NUM=rebootNum.txt
 
+# file name for install script, in case installation fails
+INSTALL_FILE=install.sh
+
 # print each cmd executed
 set -ex
 
@@ -56,6 +59,10 @@ aws configure set aws_secret_access_key $AWS_SECRET
 aws configure set default.region us-east-1
 aws configure set preview.sdb true
 
+# getting config variables from simpleDB
+echo ">>>>>> Getting number of instances required"
+N_INSTANCE="$(aws sdb select --select-expression "SELECT * FROM $CONFIG_DOMAIN" --output text | grep -v "ITEMS" | grep -v "F" | grep -o '[0-9]')"
+
 # install app code
 echo ">>>>>> Installing war file from AWS S3"
 S3_URL="$S3_BUCKET/$WAR_FILE"
@@ -69,26 +76,34 @@ S3REBOOT_URL="$S3_BUCKET/$REBOOT_FILE"
 aws s3 cp s3://$S3REBOOT_URL $HOME_PATH
 chmod +x "$HOME_PATH$REBOOT_FILE"
 
-# determine internal IP of this instance, save it to file
+# determine internal IP of this instance, save it to file, overwrite if exist
 echo ">>>>>> Getting local ip address of the instance"
-wget http://169.254.169.254/latest/meta-data/local-ipv4 -P $HOME_PATH
-
-# assign serverID for this instance, save it to file
-echo ">>>>>> Getting ami launch index of the instance"
-wget http://169.254.169.254/latest/meta-data/ami-launch-index -P $HOME_PATH
-
-# save ipAddr:svrID pairs to simpleDB
-echo ">>>>>> Write ip and id pairs to simpleDB"
 IP_ADDR=local-ipv4
-IP_ADDR="$HOME_PATH$IP_ADDR"
-AMI_IDX=ami-launch-index
-AMI_IDX="$HOME_PATH$AMI_IDX"
-aws sdb put-attributes --domain-name $IPID_DOMAIN --item-name `cat $IP_ADDR` \
-    --attributes Name=`cat $IP_ADDR`,Value=`cat $AMI_IDX`,Replace=true
+wget http://169.254.169.254/latest/meta-data/local-ipv4 -O "$HOME_PATH$IP_ADDR"
 
-# getting config variables from simpleDB
-echo ">>>>>> Getting number of instances required"
-N_INSTANCE="$(aws sdb select --select-expression "select * from $CONFIG_DOMAIN" --output text | grep -v "ITEMS" | grep -v "F" | grep -o '[0-9]')"
+# assign serverID for this instance, save it to file, overwrite if exist
+echo ">>>>>> Getting ami launch index of the instance"
+AMI_IDX=ami-launch-index
+wget http://169.254.169.254/latest/meta-data/ami-launch-index -O "$HOME_PATH$AMI_IDX"
+
+# save ipAddr:svrID pairs to simpleDB if the instance hasn't done so
+echo ">>>>>> Check if instance already exist in simpleDB"
+IP_ADDR="$HOME_PATH$IP_ADDR"
+IP_VAL="$(cat $IP_ADDR)"
+
+AMI_IDX="$HOME_PATH$AMI_IDX"
+AMI_VAL="$(cat $AMI_IDX)"
+
+# ignore if it's already there, this might happen when install fails
+EXIST="$(aws sdb get-attributes --domain-name $IPID_DOMAIN --item-name $IP_VAL --output text | wc -l)"
+if [ $EXIST -eq 0 ]
+then
+	echo ">>>>>> Write ip and id pairs to simpleDB"
+	aws sdb put-attributes --domain-name $IPID_DOMAIN --item-name $IP_VAL \
+	    --attributes Name=$IP_VAL,Value=$AMI_VAL,Replace=true
+else
+	echo ">>>>>> Instance already exist, no need to update simpleDB"
+fi
 
 # wait for all instances to write
 echo ">>>>>> Getting ip and id pairs from all instances"
@@ -117,9 +132,15 @@ sed -i 's/ATTRIBUTES//g; s/^[ \t]*//' $CONFIG_FILE
 echo ">>>>>> Initialize the reboot number"
 REBOOT_FILE="$HOME_PATH$REBOOT_NUM"
 echo 0 > $REBOOT_FILE
+chmod +x $REBOOT_FILE
+
+echo ">>>>>> Getting installation script to local"
+S3_URL="$S3_BUCKET/$INSTALL_FILE"
+aws s3 cp s3://$S3_URL $HOME_PATH
+chmod +x "$HOME_PATH$INSTALL_FILE"
 
 # change permission to give access to the app
-chmod 777 $REBOOT_FILE $INSTANCE_FILE $AMI_IDX $IP_ADDR
+chmod 777 $REBOOT_NUM $INSTANCE_FILE $AMI_IDX $IP_ADDR
 
 # start tomcat
 echo ">>>>>> Start tomcat service"
