@@ -1,14 +1,16 @@
 #!/bin/bash
 
+###################### TA HAVE TO EDIT THIS ##################
 # AWS credentials to connect with aws cli
 AWS_KEY="AKIAI4FQXGCVF2BFTXYQ"
 AWS_SECRET="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"
 
-# deployable war file
-WAR_FILE="proj1b.war"
-
 # S3 bucket name to bring war file and other stuffs in
 S3_BUCKET="edu-cornell-cs-cs5300s16-gk256"
+##############################################################
+
+# deployable war file
+WAR_FILE="proj1b.war"
 
 # simpleDB domain name to hold ipAddress-svrID pairs
 IPID_DOMAIN="SERVERIDS"
