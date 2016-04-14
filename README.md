@@ -2,6 +2,7 @@
 ## Giri Kuncoro (gk256), Yihui Fu (yf263), Shibo Zang(sz428)
 
 ### 1. Overall Structure
+
 There are four parts of our solution:
 
 - Remote Procedure Call (RPC) infrastructure
@@ -9,19 +10,19 @@ There are four parts of our solution:
 - Installation/Reboot Scripts
 - User Interface
 
-#### Remote Procedure Call (RPC) Infrastructure
+#### 1.1 Remote Procedure Call (RPC) Infrastructure
 
 The communication between different nodes are through RPC call. There are two types of RPC call: session read and session write. Session read call is used for retrieving session information from a particular node, and session write call is used for updating session information in different nodes and determining which nodes store the particular session.
 
-#### Session Management Logic
+#### 1.2 Session Management Logic
 
 The core of our solution is the session management logic in SSM protocol. It defines how our application works, such as how to store user session in the server side, how to replicate and backup sessions in the distributed system and make the system K-resilient.
 
-#### Installation/Reboot Scripts
+#### 1.3 Installation/Reboot Scripts
 
 The installation script is used to do preparation jobs in each EC2 instance like installing dependencies, set up configuration files etc., and the reboot script handles the situation when one server crashes. The scripts are using AWS S3 and SimpleDB to centralize the process and launching the application.
 
-#### User Interface
+#### 1.4 User Interface
 
 Interaction for user to perform `replace`, `refresh`, and `logout` action, and see the updated session information. This is implemented using Javascript, jQuery and Bootstrap framework.
 
@@ -37,6 +38,8 @@ The serialized session object is just concating everything in session by #.
 
 
 ### 3. Explanation of source files
+
+#### 3.1 Java package structure and class
 
 `proj1b.rpc` package
 - RPCClient.java: Perform session read and session write operations.
@@ -68,7 +71,8 @@ The serialized session object is just concating everything in session by #.
 - assets folder: Various Javascript, CSS sheet, images, fonts to build up the page.
 
 
-##### Important implementation remarks
+#### 3.2 Important implementation remarks
+
 - **RPC server thread cannot be started by servlet**, since servlet won't be initialized until the first HTTP request from client. This will cause issue since servlet will call `sessionRead` and `sessionWrite` that expect response from RPC server, but the server is not ready. The solution is to start RPC server in `BackgroundThread` class which implements `ServletContextListener`, this will make sure RPC server starts when the application is started by Tomcat server.
 
 - **`SessionManager` is implemented using singleton pattern**, it involves one class which is responsible to instantiate itself, to make sure it creates not more than one instance and in the same time it provides a global point of access to the instance. This should guarantee one hashmap that stores sessionData in one node.
@@ -83,6 +87,11 @@ The serialized session object is just concating everything in session by #.
 ### 4. Changes for exra credit
 
 ##### 4.1 Supporting F > 1 Failures
+
+
+
+##### 4.2 Installation Script Failure
+
 
 ##### Demonstration of F=2 Resillient
 
@@ -138,7 +147,7 @@ Make sure credentials provided here are same as the one in `~/.aws/credentials`.
 
 6. Execute the `launch.sh` to launch instances by typing below:
 ```
-./launch.sh
+$ ./launch.sh
 ```
 Make sure `launch.sh` is executable by typing `chmod +x launch.sh` if the script is not.
 
@@ -156,7 +165,7 @@ The project's main page should be opened, enjoy!
 
 2. Wait for couple of minutes until the instance is up. When it's ready, SSH as `ec2-user` into the instance using the same keypair when launching the instance:
 ```
-ssh -i <keypair name> ec2-user@ec2-123-123-123.aws.amazon.com
+$ ssh -i <keypair name> ec2-user@ec2-123-123-123.aws.amazon.com
 ```
 Easy way is to press `connect` button on the instance in EC2 console, and copy paste the SSH command into the terminal.
 
