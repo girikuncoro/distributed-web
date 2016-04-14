@@ -213,3 +213,7 @@ Reboot number is now incremented and tomcat service should be started again. Nav
 
 
 ### Acknowledgements
+```
+http://research.microsoft.com/pubs/74713/ssm-nsdi.pdf
+Robert's hello example
+```

@@ -4,4 +4,5 @@
 !README.md
 !*.sh
 !*.war
+!*.pdf
 .DS_STORE
