@@ -33,38 +33,38 @@ For cookies, the delimeter is #, and the format is: `SessionID#versionNumber#loc
 More specifically, for session ID, the delimiter is also #, and the format is: `serverID#rebootNum#sessionNum`. This is also translted with `_` on client side.
 
 For RPC messages, the delimiter is `_`, and the format is:
-`CallID\_OperationCode\_SerializedSession`.
-The serialized session object is just concating everything in session by #.
+`CallID_OperationCode_SerializedSession`.
+The serialized session object is just concating everything in session by `#`.
 
 
 ### 3. Explanation of source files
 
 #### 3.1 Java package structure and class
 
-`proj1b.rpc` package
+`proj1b.rpc` package  
 - RPCClient.java: Perform session read and session write operations.
 - RPCServer.java: Listen on the requests sent by rpc client.
 - RPCConfig.java: Configuration about rpc clients and rpc servers.
 - RPCStream.java: Marshall and unmarshall serialized session objects.
 
-`proj1b.servlet` package
+`proj1b.servlet` package  
 - BackgroundThread.java: Another thread running RPC server.
 - proj1bServlet.java: The controller that handles the logic of application.
 
-`proj1b.ssm` package
+`proj1b.ssm` package  
 - Session.java: Class that holds session related information, such as sessionID, version and message.
 - SessionCleaner.java: Garbage collector that cleans up expired session on `sessionTable`.
 - SessionInServer.java: Class to find which node found the sessionData from and forward to session controller that currently handles the session.
 - SessionManager.java: Class that holds sessionData in sessionTable using sessionID and version as keys, to keep old session data.
 
-`proj1b.util` package
+`proj1b.util` package  
 - Constants.java: Global constants to configure the application parameters and path.
 - Utils.java: Utility helper functions to initialize the app and getting related info from the kreatifile system.
 
-`proj1b.test` package
+`proj1b.test` package  
 - Several helper test classes for unit testing and integration test.
 
-`WebContent` files
+`WebContent` files  
 - index.jsp: Main page where user operates the app features and see the relevant information.
 - logout.jsp: Page when user decided to logout, user can login back by clicking the link here.
 - error.jsp: Page when system is failing because not enough running instances to support F ressilient.
@@ -87,7 +87,17 @@ The serialized session object is just concating everything in session by #.
 ### 4. Changes for exra credit
 
 ##### 4.1 Supporting F > 1 Failures
+Our application complies with the SSM protocol. There are two parameters we need to configure before the instances run: `N` and `F`. `N` is the number of instances we have on hand, and `F` is how many nodes can crush down before the system fails. From these two paramters, we are able to compute other parameters as folows:
 
+```[default]
+R = F + 1
+WQ = F + 1
+W = 2 * F + 1
+```
+
+Our system support F > 1 failures successfully since we are not hard coding anything while programming this system. And we tested our system successfully when `N = 5, F = 2, and N = 7, F = 3`.
+
+If you want to test our application, try to modify `N` and `F` in the `launch.sh`.
 
 
 ##### 4.2 Installation Script Failure
@@ -101,22 +111,38 @@ We should be able to recover when installation script fails during the instance 
 - The necessary files that Java code access are having `777` permission, so the normal `ec2-user` can have access without issue.
 
 
+
 ##### Demonstration of F=2 Resillient
+If `F = 2` and `N = 5`, then `R = 3`, `WQ = 3`, and `W = 5`. We need to set up 5 instances and run the `install.sh` and `launch.sh` in each one of them. To prove that our system is 2-resilient, please see the snapshots we take. We follow the following steps:  
 
+```[default]
+1) Connect browser to the public DNS name of Server 0
+2) Type a message into the text field and click 'Replace' (screenshot 1) - Should see the new message with the same session ID and new version number
+3) Reboot Server 0 without running reboot script
+4) Click 'Refresh' (screenshot 2) - Should see the same message with the same session ID and new version number
+5) Reboot Server 1 without running reboot script
+6) Click 'Refresh' (screenshot 3) - Should see the same message with the same session ID and new version number
+7) Run the reboot script on Server 0
+8) Click 'Refresh' (screenshot 4) - Should see the same message with the same session ID and new version number
+9) Reboot Server 0 and Server 1 without running reboot script
+10) Click 'Refresh' (screenshot 5) - Should see the system failing error page
+```
 
+Since time out logic is basically the same no matter `F` equals what, there's no need to test session time out here.
 
 ### How to run
 
 #### Launching instances
 1. Configure AWS credentials file located in `~/.aws/credentials` using following format:
-```
-[default]
+
+```[default]
 aws_access_key_id = YOUR_AWS_ACCESS_KEY_ID
 aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 ```
 
 2. Open `launch.sh` and configure the parameters on top of the file as below:
-```
+
+```[default]
 # number of instances to launch, default is 3
 N=3
 
@@ -130,9 +156,11 @@ S3_BUCKET="S3_BUCKET_NAME"
 # .pem extension not required
 KEYPAIR="proj1bfinal"
 ```
-Make sure to provide the keypair name without `.pem` extension and the S3 bucket name. Default keypair is also provided in the project, but please handle with care. N and F have to be valid numbers, i.e. N = 2F + 1.
+
+Make sure to provide the keypair name without `.pem` extension and the S3 bucket name. Default keypair is also provided in the project, but please handle with care. `N` and `F` have to be valid numbers, i.e. `N = 2F + 1`.
 
 3. Open `install.sh`, then configure AWS credentials and S3 bucket name on top of file as below:
+
 ```
 # AWS credentials to connect with aws cli
 AWS_KEY="YOUR_AWS_ACCESS_KEY_ID"
@@ -141,6 +169,7 @@ AWS_SECRET="YOUR_AWS_SECRET_ACCESS_KEY"
 # S3 bucket name to bring war file and other stuffs in
 S3_BUCKET="S3_BUCKET_NAME""
 ```
+
 Make sure credentials provided here are same as the one in `~/.aws/credentials`. This is important since simpleDB manages the tables for same AWS access key. Also, provide S3 bucket name as the one configured in `launch.sh`.
 
 4. Configure the `default` security group on AWS management console, to open all necessary ports, as below:
@@ -185,4 +214,3 @@ Reboot number is now incremented and tomcat service should be started again. Nav
 
 
 ### Acknowledgements
-
