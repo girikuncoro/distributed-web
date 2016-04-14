@@ -152,7 +152,7 @@ else
 fi
 
 # change permission to give access to the app
-chmod 777 $REBOOT_NUM $INSTANCE_FILE $AMI_IDX $IP_ADDR
+chmod 777 $REBOOT_FILE $INSTANCE_FILE $AMI_IDX $IP_ADDR
 
 # start tomcat
 echo ">>>>>> Start tomcat service"

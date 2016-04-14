@@ -58,4 +58,4 @@ aws sdb put-attributes --domain-name $CONFIG_DOMAIN --item-name F \
 
 # launch N instances
 echo ">>>>>> Launching N instances of EC2"
-aws ec2 run-instances --image-id $INSTANCE_TYPE --count $N --instance-type t2.micro --user-data file://$INSTALL_FILE --key-name $KEYPAIR
+aws ec2 run-instances --security-groups default --image-id $INSTANCE_TYPE --count $N --instance-type t2.micro --user-data file://$INSTALL_FILE --key-name $KEYPAIR
