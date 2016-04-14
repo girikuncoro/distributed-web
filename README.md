@@ -111,36 +111,34 @@ We should be able to recover when installation script fails during the instance 
 - The necessary files that Java code access are having `777` permission, so the normal `ec2-user` can have access without issue.
 
 
-
 ##### Demonstration of F=2 Resillient
 If `F = 2` and `N = 5`, then `R = 3`, `WQ = 3`, and `W = 5`. We need to set up 5 instances and run the `install.sh` and `launch.sh` in each one of them. To prove that our system is 2-resilient, please see the snapshots we take. We follow the following steps:  
 
 ```[default]
 1) Connect browser to the public DNS name of Server 0
 2) Type a message into the text field and click 'Replace' (screenshot 1) - Should see the new message with the same session ID and new version number
-3) Reboot Server 0 without running reboot script
-4) Click 'Refresh' (screenshot 2) - Should see the same message with the same session ID and new version number
-5) Reboot Server 1 without running reboot script
-6) Click 'Refresh' (screenshot 3) - Should see the same message with the same session ID and new version number
-7) Run the reboot script on Server 0
-8) Click 'Refresh' (screenshot 4) - Should see the same message with the same session ID and new version number
-9) Reboot Server 0 and Server 1 without running reboot script
-10) Click 'Refresh' (screenshot 5) - Should see the system failing error page
+3) Reboot Server 0 and Server 1 without running reboot script
+4) Connect browser to the public DNS name of Server 2 (screenshot 2) - Should see the same message with the same session ID and new version number
+5) SSH to Server 0 and execute the reboot script with sudo
+6) Connect browser to the public DNS name of Server 0 (screenshot 3) - Should see the same message with the same session ID and new reboot number and same version number
+7) Reboot Server 3 without running reboot script
+8) Connect browser to the public DNS name of Server 0 (screenshot 3) - Should see the error page because we have three nodes failing (1,2,3)
 ```
 
 Since time out logic is basically the same no matter `F` equals what, there's no need to test session time out here.
 
+
 ### How to run
 
 #### Launching instances
-1. Configure AWS credentials file located in `~/.aws/credentials` using following format:
+1.) Configure AWS credentials file located in `~/.aws/credentials` using following format:
 
 ```[default]
 aws_access_key_id = YOUR_AWS_ACCESS_KEY_ID
 aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 ```
 
-2. Open `launch.sh` and configure the parameters on top of the file as below:
+2.) Open `launch.sh` and configure the parameters on top of the file as below:
 
 ```[default]
 # number of instances to launch, default is 3
@@ -157,9 +155,9 @@ S3_BUCKET="S3_BUCKET_NAME"
 KEYPAIR="proj1bfinal"
 ```
 
-Make sure to provide the keypair name without `.pem` extension and the S3 bucket name. Default keypair is also provided in the project, but please handle with care. `N` and `F` have to be valid numbers, i.e. `N = 2F + 1`.
+Make sure to provide the keypair name without `.pem` extension and the S3 bucket name. `N` and `F` have to be valid numbers, i.e. `N = 2F + 1`.
 
-3. Open `install.sh`, then configure AWS credentials and S3 bucket name on top of file as below:
+3.) Open `install.sh`, then configure AWS credentials and S3 bucket name on top of file as below:
 
 ```
 # AWS credentials to connect with aws cli
@@ -172,7 +170,8 @@ S3_BUCKET="S3_BUCKET_NAME""
 
 Make sure credentials provided here are same as the one in `~/.aws/credentials`. This is important since simpleDB manages the tables for same AWS access key. Also, provide S3 bucket name as the one configured in `launch.sh`.
 
-4. Configure the `default` security group on AWS management console, to open all necessary ports, as below:
+4.) Configure the `default` security group on AWS management console, to open all necessary ports, as below:  
+
 - Port 80: for TCP
 - Port 8080: for Tomcat
 - Port 5300: for RPC communication
@@ -180,17 +179,17 @@ Make sure credentials provided here are same as the one in `~/.aws/credentials`.
 - Port 443: for HTTPS
 - All ports for UDP traffic
 
-5. Configure the bucket policy on the provided S3 bucket name, allow everyone to download/upload files. The cofiguration shouldn't matter as long as the provided AWS credentials own the bucket and have S3 full access policy.
+5.) Configure the bucket policy on the provided S3 bucket name, allow everyone to download/upload files. The cofiguration shouldn't matter as long as the provided AWS credentials own the bucket and have S3 full access policy.
 
-6. Execute the `launch.sh` to launch instances by typing below:
+6.) Execute the `launch.sh` to launch instances by typing below:
 ```
 $ ./launch.sh
 ```
 Make sure `launch.sh` is executable by typing `chmod +x launch.sh` if the script is not.
 
-7. Go to AWS EC2 console and N numbers of EC2 instances should start initializing. Find the public DNS of each intance and register the domain at `bigdata.systems`.
+7.) Go to AWS EC2 console and N numbers of EC2 instances should start initializing. Find the public DNS of each intance and register the domain at `bigdata.systems`.
 
-8. Once EC2 instances are running and completed the checks, open up browser and locate one of the instances domain at `proj1b` url, e.g.:
+8.) Once EC2 instances are running and completed the checks, open up browser and locate one of the instances domain at `proj1b` url, e.g.:
 ```
 http://server0.sz428.bigdata.systems:8080/proj1b
 ```

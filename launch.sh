@@ -2,13 +2,13 @@
 
 ###################### TA HAVE TO EDIT THIS ##################
 # number of instances to launch
-N=3
+N=5
 
 # resiliency to maintain
-F=1
+F=2
 
 # S3 bucket name to bring war file and other stuffs in
-S3_BUCKET="edu-cornell-cs-cs5300s16-gk256"
+S3_BUCKET="edu-cornell-cs-cs5300s16-sz428"
 
 # keypair to ssh instance, important for reboot process
 # .pem extension not required

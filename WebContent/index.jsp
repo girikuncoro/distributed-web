@@ -129,7 +129,7 @@
 				data : params,
 				success : function(data) {
 					if (data.status == "error") {
-						window.location.href = "/prob1b/error.jsp";	
+						window.location.href = "/proj1b/error.jsp";	
 					}
 					
 					console.log(data);
