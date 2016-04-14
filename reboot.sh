@@ -2,6 +2,12 @@
 
 HOME_PATH="/var/tmp/"
 REBOOT_FILE=rebootNum.txt
+INSTALL_FILE=install.sh
+
+# rerun installation script for extra credit
+echo ">>>>>> Rerun installation script"
+INSTALL_SH="$HOME_PATH$INSTALL_FILE"
+sudo $INSTALL_SH
 
 # get current reboot number
 echo ">>>>>> Getting current reboot number"
