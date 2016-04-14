@@ -128,16 +128,28 @@ CONFIG_FILE="$HOME_PATH$CONFIG_FILE"
 aws sdb select --select-expression "SELECT * FROM $CONFIG_DOMAIN" --output text | grep -v "ITEMS" > $CONFIG_FILE
 sed -i 's/ATTRIBUTES//g; s/^[ \t]*//' $CONFIG_FILE
 
-# init reboot number
-echo ">>>>>> Initialize the reboot number"
+# init reboot number only if not exist
 REBOOT_FILE="$HOME_PATH$REBOOT_NUM"
-echo 0 > $REBOOT_FILE
-chmod +x $REBOOT_FILE
+if [ ! -f $REBOOT_FILE ]
+then
+	echo ">>>>>> Initialize the reboot number"
+	echo 0 > $REBOOT_FILE
+	chmod +x $REBOOT_FILE
+else
+	echo ">>>>>> Reboot file already exist"
+fi
 
-echo ">>>>>> Getting installation script to local"
-S3_URL="$S3_BUCKET/$INSTALL_FILE"
-aws s3 cp s3://$S3_URL $HOME_PATH
-chmod +x "$HOME_PATH$INSTALL_FILE"
+# getting installation script only if not exist
+INSTALL_F="$HOME_PATH$INSTALL_FILE"
+if [ ! -f $INSTALL_FILE ]
+then
+	echo ">>>>>> Getting installation script to local"
+	S3_URL="$S3_BUCKET/$INSTALL_FILE"
+	aws s3 cp s3://$S3_URL $HOME_PATH
+	chmod +x $INSTALL_F
+else
+	echo ">>>>>> Install file already exist"
+fi
 
 # change permission to give access to the app
 chmod 777 $REBOOT_NUM $INSTANCE_FILE $AMI_IDX $IP_ADDR

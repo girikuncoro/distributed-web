@@ -59,7 +59,7 @@ The serialized session object is just concating everything in session by `#`.
 
 `proj1b.util` package  
 - Constants.java: Global constants to configure the application parameters and path.
-- Utils.java: Utility helper functions to initialize the app and getting related info from the file system.
+- Utils.java: Utility helper functions to initialize the app and getting related info from the kreatifile system.
 
 `proj1b.test` package  
 - Several helper test classes for unit testing and integration test.
@@ -101,6 +101,14 @@ If you want to test our application, try to modify `N` and `F` in the `launch.sh
 
 
 ##### 4.2 Installation Script Failure
+
+We should be able to recover when installation script fails during the instance initialization. So when the instance is up, we could just run `reboot.sh` to rerun the `install.sh` and increment the reboot number. As `install.sh` might stop anywhere when it fails, it's important to handle cases as below:
+- Ignore writing to simpleDB if the domain already contains N instances of IP and serverID pairs
+- Ignore creating `rebootNum.txt` to retain the current reboot number
+- Ignore
+- Use `sudo` to run commands with root permission, since when instance is up, it's going to run script as `ec2-user`.
+- There's no harm in reinstalling Java and tomcat if it's already been installed
+- The necessary files that Java code access are having `777` permission, so the normal `ec2-user` can have access without issue.
 
 
 
